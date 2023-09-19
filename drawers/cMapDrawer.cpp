@@ -11,6 +11,8 @@
 
 #include <cmath>
 
+cMapDrawer* g_mapDrawer = nullptr;
+
 cMapDrawer::cMapDrawer(cMap *map, cPlayer *player, cMapCamera *camera) :
         m_map(map),
         m_player(player),
@@ -20,6 +22,7 @@ cMapDrawer::cMapDrawer(cMap *map, cPlayer *player, cMapCamera *camera) :
         m_drawGrid(false) {
     assert(map);
     assert(camera);
+    g_mapDrawer = this;
 }
 
 cMapDrawer::~cMapDrawer() {
@@ -29,6 +32,130 @@ cMapDrawer::~cMapDrawer() {
     if (m_BmpTemp) {
         destroy_bitmap(m_BmpTemp);
     }
+}
+
+#include <allegro.h>
+//#include "alleggl.h"
+#include <iostream>
+#include <fstream>
+
+void cMapDrawer::Save()
+{
+//  int iPl = m_player->getId();
+
+  float tileWidth = mapCamera->getZoomedTileWidth();
+  float tileHeight = mapCamera->getZoomedTileHeight();
+
+  int iTileHeight = (tileHeight + 1);
+  int iTileWidth = (tileWidth + 1);
+
+  bool saved = false;
+
+  //int maxX = m_camera->getViewportEndX()- m_camera->getViewportStartX()+32;
+  //int maxY = m_camera->getViewportEndY()- m_camera->getViewportStartY()+32;
+  //for (int viewportX = m_camera->getViewportStartX(); viewportX < m_camera->getViewportEndX() + 32; viewportX += 32) {
+
+  //  // new row
+  //  for (int viewportY = m_camera->getViewportStartY(); viewportY < m_camera->getViewportEndY() + 32; viewportY += 32) {
+
+  //  }
+  //}
+
+  int w = map.getWidth()*32;
+  int h = map.getHeight()*32;
+  //map.getCellWithMapDimensions(0, 0);
+
+  BITMAP* bbmpTemp=nullptr;
+    int colorDepthScreen = bitmap_color_depth(bmp_screen);
+    bbmpTemp = create_bitmap_ex(colorDepthScreen, w, h);
+
+  // draw vertical rows..
+ // for (int viewportX = m_camera->getViewportStartX(); viewportX < m_camera->getViewportEndX() + 32; viewportX += 32) {
+    for (int vx = 0;vx<map.getWidth();++vx) {
+      for (int vy=0;vy<map.getHeight();++vy){
+
+    // new row
+ //   for (int viewportY = m_camera->getViewportStartY(); viewportY < m_camera->getViewportEndY() + 32; viewportY += 32) {
+
+      //int iCell = mapCamera->getCellFromAbsolutePosition(viewportX, viewportY);
+        int iCell = map.getCellWithMapDimensions(vx,vy);
+      if (iCell < 0) continue;
+
+      // not visible for player, so do not draw
+//      if (!m_map->isVisible(iCell, iPl)) {
+//        continue;
+//      }
+
+      // skip outer border cells
+      if (!m_map->isWithinBoundaries(iCell)) {
+        continue;
+      }
+
+      tCell* cell = m_map->getCell(iCell);
+
+      if (cell == nullptr) {
+        continue;
+      }
+
+      int absoluteXCoordinateOnMap = m_map->getAbsoluteXPositionFromCell(iCell);
+      float fDrawX = mapCamera->getWindowXPosition(absoluteXCoordinateOnMap);
+
+      int absoluteYCoordinateOnMap = m_map->getAbsoluteYPositionFromCell(iCell);
+      float fDrawY = mapCamera->getWindowYPosition(absoluteYCoordinateOnMap);
+
+      // Draw terrain
+      if (cell->type < TERRAIN_BLOOM || cell->type > TERRAIN_WALL) {
+        // somehow, invalid type
+        cRectangle rectangle = cRectangle(0, 0, 32, 32);
+        allegroDrawer->drawRectangleFilled(m_BmpTemp, rectangle, makecol(245, 245, 245));
+      }
+      else {
+        // valid type
+        blit((BITMAP*)gfxdata[cell->type].dat,
+          m_BmpTemp,
+          cell->tile * 32, 0, // keep 32 here, because in BMP this is the size of the tiles
+          0, 0,
+          32, 32
+        );
+      }
+
+      //skip smudge for now
+
+      int iDrawX = round(fDrawX);
+      int iDrawY = round(fDrawY);
+      allegroDrawer->stretchBlit(m_BmpTemp, bmp_screen, 0, 0, 32, 32, iDrawX, iDrawY, iTileWidth, iTileHeight);
+
+      allegroDrawer->stretchBlit(m_BmpTemp, bbmpTemp, 0, 0, 32, 32, iDrawX, iDrawY, iTileWidth, iTileHeight);
+      
+
+    }
+  }
+
+  if (!saved)
+  {
+    //        if (!save_bitmap("d:\\tmp\\stretched_image.bmp", m_BmpTemp, NULL))
+    if (!save_bitmap("d:\\tmp\\stretched_image1.bmp", bbmpTemp, NULL))
+    {
+      std::ofstream outputFile("d:\\tmp\\2output.txt");
+      if (!outputFile.is_open()) {
+        std::cerr << "Error opening the file." << std::endl;
+      }
+      outputFile << "SB ERR" << std::endl;
+      outputFile.close();
+    }
+    else
+    {
+      std::ofstream outputFile("d:\\tmp\\2output.txt");
+      if (!outputFile.is_open()) {
+        std::cerr << "Error opening the file." << std::endl;
+      }
+      outputFile << "SB OK" << std::endl;
+      outputFile.close();
+    }
+    //al_save_bitmap("stretched_image.png", m_BmpTemp);
+    saved = true;
+  }
+
 }
 
 void cMapDrawer::drawShroud() {

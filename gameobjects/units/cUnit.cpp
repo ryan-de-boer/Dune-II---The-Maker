@@ -244,6 +244,9 @@ void cUnit::createSquishedParticle() {
     }
 }
 
+extern bool g_infiniteStructureHealth;
+extern bool g_infiniteUnitHealth;
+
 void cUnit::createExplosionParticle() {
     int iDieX = pos_x_centered();
     int iDieY = pos_y_centered();
@@ -343,7 +346,7 @@ void cUnit::createExplosionParticle() {
                 if (idOfUnitAtCell > -1) {
                     int id = idOfUnitAtCell;
 
-                    if (unit[id].iHitPoints > 0) {
+                    if (unit[id].iHitPoints > 0 && (!g_infiniteUnitHealth||iPlayer==0)) {
                         unit[id].iHitPoints -= 150;
 
                         // NO HP LEFT, DIE
@@ -3225,7 +3228,14 @@ void cUnit::draw_debug() {
     }
 }
 
+extern bool g_infiniteStructureHealth;
+extern bool g_infiniteUnitHealth;
+
 void cUnit::takeDamage(int damage, int unitWhoDealsDamage, int structureWhoDealsDamage) {
+  if (g_infiniteUnitHealth && iPlayer==0)
+  {
+    return;
+  }
     iHitPoints -= damage;
     if (isDead()) {
         die(true, false);

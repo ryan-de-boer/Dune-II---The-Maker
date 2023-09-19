@@ -413,6 +413,9 @@ void cAbstractStructure::setFrame(int frame) {
 	iFrame = frame;
 }
 
+bool g_infiniteStructureHealth = true;
+bool g_infiniteUnitHealth = true;
+
 /**
 	Damage structure by amount of hp. The amount passed to this method
 	must be > 0. When it is < 0, it will be wrapped to > 0 anyway and
@@ -427,6 +430,7 @@ void cAbstractStructure::decay(int hp) {
         damage *= -1; // - * - = +
     }
 
+    if (!g_infiniteStructureHealth || iPlayer != 0)
     iHitPoints -= damage; // do damage
     if (iHitPoints < 1) iHitPoints = 1;
 
@@ -441,6 +445,8 @@ void cAbstractStructure::decay(int hp) {
     game.onNotifyGameEvent(event);
 }
 
+extern bool g_infiniteStructureHealth;
+extern bool g_infiniteUnitHealth;
 
 /**
 	Damage structure by amount of hp. The amount passed to this method
@@ -453,6 +459,12 @@ void cAbstractStructure::decay(int hp) {
     @param originId = ID of unit who damaged me. It can be < 0 meaning unknown unit (or not applicable)
 **/
 void cAbstractStructure::damage(int hp, int originId) {
+
+  if (g_infiniteStructureHealth && iPlayer == 0)
+  {
+    return;
+  }
+
 	int damage = hp;
 	if (damage < 0) {
 		logbook("cAbstractStructure::damage() got negative parameter, wrapped");

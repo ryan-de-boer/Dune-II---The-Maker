@@ -8,6 +8,10 @@
 
 #include <algorithm>
 
+#include "drawers/cMapDrawer.h"
+
+extern cMapDrawer* g_mapDrawer;
+
 namespace {
     constexpr auto kMapBoundaryScrollSpeed = 5.0f;
 }
@@ -307,6 +311,9 @@ void cMapCamera::onKeyHold(const cKeyboardEvent &event) {
     }
 }
 
+#include <iostream>
+#include <fstream>
+
 void cMapCamera::onKeyPressed(const cKeyboardEvent &event) {
     if (event.hasKey(KEY_LEFT)) {
         setMoveX(0.0f, m_moveSpeedBorderOrKeys);
@@ -326,6 +333,25 @@ void cMapCamera::onKeyPressed(const cKeyboardEvent &event) {
     if (event.hasKey(KEY_DOWN)) {
         setMoveY(0.0f, m_moveSpeedBorderOrKeys);
         m_keyPressedDown = false;
+    }
+
+    if (event.hasKey(KEY_T))
+    {
+      std::ofstream outputFile("d:\\tmp\\1output.txt");
+
+      // Check if the file is open
+      if (!outputFile.is_open()) {
+        std::cerr << "Error opening the file." << std::endl;
+      }
+
+      // Write text to the file
+      outputFile << "Hello, world!" << std::endl;
+      outputFile << "This is a sample text file." << std::endl;
+
+      // Close the file
+      outputFile.close();
+
+      g_mapDrawer->Save();
     }
 }
 

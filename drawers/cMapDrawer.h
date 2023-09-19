@@ -11,6 +11,8 @@ class cMapDrawer {
 		cMapDrawer(cMap * map, cPlayer * player, cMapCamera * camera);
 		~cMapDrawer();
 
+		void Save();
+
 		void setPlayer(cPlayer * thePlayer);
 
 		void drawTerrain();
