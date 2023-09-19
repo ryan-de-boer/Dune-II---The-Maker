@@ -10,6 +10,7 @@
 
 */
 #include "cGame.h"
+#include <ctime>
 
 #include "building/cItemBuilder.h"
 #include "d2tmc.h"

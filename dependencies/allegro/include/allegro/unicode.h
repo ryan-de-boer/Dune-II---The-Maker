@@ -19,6 +19,9 @@
 #ifndef ALLEGRO_UNICODE__H
 #define ALLEGRO_UNICODE__H
 
+#include <stdarg.h>
+#include <limits.h>
+
 #include "base.h"
 
 #ifdef __cplusplus

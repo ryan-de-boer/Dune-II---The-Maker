@@ -115,7 +115,7 @@ target_compile_options(${PROJECT_NAME}
     "-Wpedantic"
     "-Wnon-virtual-dtor"
     "-Wuseless-cast"
-    "-Wredundant-tags"
+    "-Wredundant-decls"
     "-Wzero-as-null-pointer-constant"
     "-Wextra-semi"
 )

@@ -27,6 +27,7 @@
    extern "C" {
 #endif
 
+#include <errno.h>
 
 /* ftofix and fixtof are used in generic C versions of fixmul and fixdiv */
 AL_INLINE(fixed, ftofix, (double x),

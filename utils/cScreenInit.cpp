@@ -9,7 +9,7 @@
 #include <array>
 #include <cassert>
 #include <optional>
-#include <span>
+//#include <span>
 #include <vector>
 
 namespace {
@@ -26,17 +26,6 @@ constexpr int kNonMagicVideoDriver = GFX_XWINDOWS_FULLSCREEN;
 // tries them in this order (1st come first serve)
 // do note, when DPI is > 100% in OS (atleast in Windows) things seem to get wonky.
 // see also: https://github.com/stefanhendriks/Dune-II---The-Maker/issues/314
-constexpr std::array<ScreenResolution, 9> kResolutionsToTry = {
-    ScreenResolution{3840, 2160}, // 4k
-    ScreenResolution{2048, 1536}, // 4:3 aspect ratio
-    ScreenResolution{1920, 1080}, // Full HD
-    ScreenResolution{1920, 1440}, // 4:3 aspect ratio
-    ScreenResolution{1600, 900},
-    ScreenResolution{1280, 1024},
-    ScreenResolution{1366, 768},  // widescreen
-    ScreenResolution{1024, 768},
-    ScreenResolution{800, 600}
-};
 
 const GFX_MODE* FindGfxMode(const GFX_MODE_LIST& list, ScreenResolution res, int colorDepth) {
     for (int n = 0; n < list.num_modes; ++n) {
@@ -48,7 +37,7 @@ const GFX_MODE* FindGfxMode(const GFX_MODE_LIST& list, ScreenResolution res, int
     return nullptr;
 }
 
-std::optional<ScreenResolution> TryAndSetFirstValidResolution(std::span<const ScreenResolution> resolutionsToTry) {
+std::optional<ScreenResolution> TryAndSetFirstValidResolution(std::vector<ScreenResolution> resolutionsToTry) {
     auto logger = cLogger::getInstance();
 
     for (ScreenResolution res : resolutionsToTry) {
@@ -71,6 +60,18 @@ std::optional<ScreenResolution> SetBestScreenResolution(int colorDepth) {
 
     auto logger = cLogger::getInstance();
 
+std::vector<ScreenResolution> kResolutionsToTry;
+    kResolutionsToTry.push_back(ScreenResolution{3840, 2160}); // 4k
+    kResolutionsToTry.push_back(ScreenResolution{2048, 1536}); // 4:3 aspect ratio
+    kResolutionsToTry.push_back(ScreenResolution{1920, 1080}); // Full HD
+    kResolutionsToTry.push_back(ScreenResolution{1920, 1440}); // 4:3 aspect ratio
+    kResolutionsToTry.push_back(ScreenResolution{1600, 900});
+    kResolutionsToTry.push_back(ScreenResolution{1280, 1024});
+    kResolutionsToTry.push_back(ScreenResolution{1366, 768});  // widescreen
+    kResolutionsToTry.push_back(ScreenResolution{1024, 768});
+    kResolutionsToTry.push_back(ScreenResolution{800, 600});
+
+
     // Note: do not use "magic" drivers like GFX_AUTODETECT here, that doesn't work according to the Allegro
     // documentation.
     GFX_MODE_LIST* modeList = get_gfx_mode_list(kNonMagicVideoDriver);
@@ -79,6 +80,8 @@ std::optional<ScreenResolution> SetBestScreenResolution(int colorDepth) {
     if (modeList) {
         // Make a shortlist of resolutions to try by filtering unsupported ones.
         std::vector<ScreenResolution> supportedResolutions;
+
+
         for (ScreenResolution res : kResolutionsToTry) {
             auto mode = FindGfxMode(*modeList, res, colorDepth);
             if (mode) {
