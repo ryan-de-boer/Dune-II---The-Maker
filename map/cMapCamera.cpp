@@ -337,6 +337,9 @@ void cMapCamera::onKeyPressed(const cKeyboardEvent &event) {
 
     if (event.hasKey(KEY_T))
     {
+      m_zoomLevel = 1.0;
+      adjustViewport(mouse_x, mouse_y);
+
       std::ofstream outputFile("d:\\tmp\\1output.txt");
 
       // Check if the file is open
@@ -352,6 +355,24 @@ void cMapCamera::onKeyPressed(const cKeyboardEvent &event) {
       outputFile.close();
 
       g_mapDrawer->Save();
+
+      std::ofstream posFile("d:\\tmp\\pos.txt");
+      posFile << "Map W: " << map.getWidth() << ", H: " << map.getHeight() << std::endl;
+      for (int i = 0;i < 300; ++i)
+      {
+        if (unit[i].isValid())
+        {
+          int pos = unit[i].getCell();
+          int x = unit[i].getCellX();
+          int y = unit[i].getCellY();
+          float pX = unit[i].pos_x();
+          float pY = unit[i].pos_y();
+          //i==3 is top right harkonan soldier first level
+
+          posFile << i << " " << pos << ", px: " << pX <<", py: "<<pY<<", cx: " << x << ", cy: " << y << ", player: " << unit[i].getPlayerId() << std::endl;
+        }
+      }
+      posFile.close();
     }
 }
 

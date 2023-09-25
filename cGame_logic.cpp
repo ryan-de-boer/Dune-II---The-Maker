@@ -72,6 +72,8 @@ constexpr auto kMaxAlpha = 255;
 
 }
 
+bool g_playMusic = false;
+
 cGame::cGame() : m_timeManager(*this) {
     memset(m_states, 0, sizeof(cGameState *));
 
@@ -83,7 +85,8 @@ cGame::cGame() : m_timeManager(*this) {
     m_windowed = false;
     m_allowRepeatingReinforcements = false;
     m_playSound = true;
-    m_playMusic = true;
+//    m_playMusic = true;
+    m_playMusic = g_playMusic;
     // default INI screen width and height is not loaded
     // if not loaded, we will try automatic setup
     m_iniScreenWidth = -1;

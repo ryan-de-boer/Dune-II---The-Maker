@@ -677,6 +677,96 @@ void cUnit::draw_path() const {
     }
 }
 
+#include <iostream>
+#include <fstream>
+
+void cUnit::draw2(BITMAP* bbmpTemp)
+{
+  //try units?
+//unit[3].iType
+  std::ofstream posFile2("d:\\tmp\\pos2.txt");
+
+  s_UnitInfo& unitType = getUnitInfo();
+  const int bmp_width = unitType.bmp_width;
+  const int bmp_height = unitType.bmp_height;
+
+  // the multiplier we will use to draw the unit
+  const int bmp_head = convertAngleToDrawIndex(iHeadFacing);
+  const int bmp_body = convertAngleToDrawIndex(iBodyFacing);
+
+  // draw body first
+  int start_x = bmp_body * bmp_width;
+  int start_y = bmp_height * iFrame;
+
+  const int ux = draw_x();
+  const int uy = draw_y();
+
+  const float scaledWidth = mapCamera->factorZoomLevel(bmp_width);
+  const float scaledHeight = mapCamera->factorZoomLevel(bmp_height);
+
+    // Draw BODY
+  cPlayer& cPlayer = players[this->iPlayer];
+  BITMAP* bitmap = cPlayer.getUnitBitmap(iType);
+  if (bitmap) {
+    //allegroDrawer->maskedStretchBlit(bitmap, bmp_screen, start_x, start_y, bmp_width, bmp_height,
+    //  ux, uy,
+    //  scaledWidth,
+    //  scaledHeight);
+    allegroDrawer->maskedStretchBlit(bitmap, bbmpTemp, start_x, start_y, bmp_width, bmp_height,
+      ux, uy,
+      scaledWidth,
+      scaledHeight);
+
+    posFile2 << "body: start_x:" << start_x << ", start_y:" << start_y << ", ux:" << ux <<", uy:" << uy << std::endl;
+
+    switch (iBodyFacing) {
+    case FACE_UP:
+      posFile2 << "FACE_UP (0)" << std::endl;
+      break;
+    case FACE_UPRIGHT:
+      posFile2 << "FACE_UPRIGHT (1)" << std::endl;
+      break;
+    case FACE_RIGHT:
+      posFile2 << "FACE_RIGHT (2)" << std::endl;
+      break;
+    case FACE_DOWNRIGHT:
+      posFile2 << "FACE_DOWNRIGHT (3)" << std::endl;
+      break;
+    case FACE_DOWN:
+      posFile2 << "FACE_DOWN (4)" << std::endl;
+      break;
+    case FACE_DOWNLEFT:
+      posFile2 << "FACE_DOWNLEFT (5)" << std::endl;
+      break;
+    case FACE_LEFT:
+      posFile2 << "FACE_LEFT (6)" << std::endl;
+      break;
+    case FACE_UPLEFT:
+      posFile2 << "FACE_UPLEFT (7)" << std::endl;
+      break;
+    }
+
+
+  }
+
+    // Draw TOP
+    BITMAP* top = cPlayer.getUnitTopBitmap(iType);
+    if (top && iHitPoints > -1) {
+      // recalculate start_x using head instead of body
+      start_x = bmp_head * bmp_width;
+      start_y = bmp_height * iFrame;
+
+//      allegroDrawer->maskedStretchBlit(top, bmp_screen, start_x, start_y, bmp_width, bmp_height, ux, uy,
+//        mapCamera->factorZoomLevel(bmp_width), mapCamera->factorZoomLevel(bmp_height));
+      allegroDrawer->maskedStretchBlit(top, bbmpTemp, start_x, start_y, bmp_width, bmp_height, ux, uy,
+        mapCamera->factorZoomLevel(bmp_width), mapCamera->factorZoomLevel(bmp_height));
+
+      posFile2 << "top: start_x:" << start_x << ", start_y:" << start_y << ", ux:" << ux << ", uy:" << uy << std::endl;
+    }
+
+    posFile2.close();
+}
+
 void cUnit::draw() {
     if (isHidden()) {
         // temp hitpoints filled, meaning it is not visible (but not dead). Ie, it is being repaired, or transfered

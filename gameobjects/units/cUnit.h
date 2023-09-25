@@ -160,7 +160,8 @@ public:
     void draw_health();
 	void draw_experience();
 	void draw_spice();
-    void draw();
+  void draw();
+  void draw2(BITMAP* bbmpTemp);
 	void draw_path() const;
     bool isValid() const;     // valid unit?
 

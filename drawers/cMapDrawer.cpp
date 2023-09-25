@@ -127,8 +127,9 @@ void cMapDrawer::Save()
 
       allegroDrawer->stretchBlit(m_BmpTemp, bbmpTemp, 0, 0, 32, 32, iDrawX, iDrawY, iTileWidth, iTileHeight);
       
+      unit[3].draw2(bbmpTemp);
 
-    }
+      }
   }
 
   if (!saved)
