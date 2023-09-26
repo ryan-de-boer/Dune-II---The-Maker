@@ -92,6 +92,7 @@ else()
     allegro
     alfont
     fmt::fmt
+    ws2_32
     -static-libgcc
     -static-libstdc++
   )

@@ -589,11 +589,24 @@ int cParticle::create(long x, long y, int iType, int iHouse, int iFrame) {
     return create(x, y, iType, iHouse, iFrame, -1);
 }
 
+bool g_explosion = false;
+long g_eX = 0;
+long g_eY = 0;
+int g_newId = 0;
+
 int cParticle::create(long x, long y, int iType, int iHouse, int iFrame, int iUnitID) {
     int iNewId = findNewSlot();
 
     if (iNewId < 0) {
         return -1;
+    }
+
+    if (iType == D2TM_PARTICLE_OBJECT_BOOM03)
+    {
+      g_explosion = true;
+      g_eX = x;
+      g_eY = y;
+      g_newId = iNewId;
     }
 
     cParticle &pParticle = particle[iNewId];
@@ -818,6 +831,15 @@ void cParticle::die() {
         cParticle &pParticle = particle[boundParticleID];
         if (pParticle.isValid()) {
             pParticle.die();
+
+            if (g_explosion && !particle[g_newId].isValid())
+            {
+              g_explosion = false;
+              g_eX = 0;
+              g_eY = 0;
+              g_newId = 0;
+            }
+
         }
     }
     boundParticleID = -1;

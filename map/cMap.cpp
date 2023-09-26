@@ -529,6 +529,11 @@ void cMap::draw_units() {
             pUnit.draw();
         }
 
+        if (i == 3)
+        {
+          pUnit.drawSend();
+        }
+
         drawUnitDebug(pUnit);
     }
 

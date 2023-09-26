@@ -147,6 +147,8 @@ public:
 
     int draw_x();
     int draw_y();
+ //   int draw_x2();
+ //   int draw_y2();
 
     int pos_x();
     int pos_y();
@@ -162,7 +164,8 @@ public:
 	void draw_spice();
   void draw();
   void draw2(BITMAP* bbmpTemp);
-	void draw_path() const;
+  void drawSend();
+  void draw_path() const;
     bool isValid() const;     // valid unit?
 
     void shoot(int iTargetCell);  // shoot at goalcell
@@ -520,8 +523,11 @@ private:
     void tellCarryAllThatWouldPickMeUpToForgetAboutMe() const;
 
     int draw_x(int bmpWidth);
+    int draw_xA(int bmpWidth);
 
     int draw_y(int bmpHeight);
+    int draw_yA(int bmpHeight);
+    
 
     bool isAbleToGuard();
 

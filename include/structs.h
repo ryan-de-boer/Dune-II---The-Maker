@@ -1,5 +1,12 @@
 #pragma once
 
+//#define WIN32_LEAN_AND_MEAN
+//#ifndef WND
+//#include <windows.h>
+//#define WND 1
+//#undef BITMAP
+//#endif
+
 #include "enums.h"
 
 #include <vector>

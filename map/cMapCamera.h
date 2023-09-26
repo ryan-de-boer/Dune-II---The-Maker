@@ -81,6 +81,11 @@ public:
     int getWindowXPositionWithOffset(int absoluteXPosition, int offset) {
         return std::round(factorZoomLevel((absoluteXPosition - m_viewportStartX) + offset));
     }
+    int getWindowXPositionWithOffsetA(int absoluteXPosition, int offset) {
+      int useIt = offset;
+      useIt++;
+      return std::round(absoluteXPosition - 0);// m_viewportStartX);
+    }
 
     /**
      * Translates an absolute Y position into a position on the window. The offset is added after translating
@@ -92,6 +97,12 @@ public:
     int getWindowYPositionWithOffset(int absoluteYPosition, int offset) {
         return std::round(factorZoomLevel((absoluteYPosition - m_viewportStartY) + offset) + m_heightOfTopBar);
     }
+    int getWindowYPositionWithOffsetA(int absoluteYPosition, int offset) {
+      int useIt = offset;
+      useIt++;
+      return std::round(absoluteYPosition - 0);// +m_heightOfTopBar);
+    }
+    
 
     // These methods need to use zoomfactor to properly calculate the position on the map
     int getAbsMapMouseX(int mouseX) {
@@ -189,7 +200,9 @@ private:
     float m_tileWidth;
 
     // the map this camera is viewing
+    public:
     cMap * m_pMap;
+    private:
 
     void adjustViewport(float screenX, float screenY);
 

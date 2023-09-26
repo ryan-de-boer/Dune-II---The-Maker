@@ -10,6 +10,7 @@
 
   */
 
+
 #include "cUnit.h"
 
 #include "d2tmc.h"
@@ -490,6 +491,22 @@ int cUnit::draw_x() {
     return draw_x(getBmpWidth());
 }
 
+//int cUnit::draw_x2() {
+//
+//  // Example:
+//// unit with 48 width (harvester, carry-all)
+//// (32 - 48) = -16 / 2 = -8
+//  int bmpOffset = (TILESIZE_WIDTH_PIXELS - bmpWidth) / 2;
+//  // x is -8 pixels (ie, 8 pixels more to the left than top-left corner (pos_x) of a cell
+//  return mapCamera->get(pos_x(), bmpOffset);
+//
+//  return draw_x(getBmpWidth());
+//}
+//int cUnit::draw_y2() {
+//  return draw_x(getBmpWidth());
+//}
+
+
 int cUnit::draw_x(int bmpWidth) {
     // Example:
     // unit with 48 width (harvester, carry-all)
@@ -497,6 +514,13 @@ int cUnit::draw_x(int bmpWidth) {
     int bmpOffset = (TILESIZE_WIDTH_PIXELS - bmpWidth) / 2;
     // x is -8 pixels (ie, 8 pixels more to the left than top-left corner (pos_x) of a cell
     return mapCamera->getWindowXPositionWithOffset(pos_x(), bmpOffset);
+}
+
+int cUnit::draw_xA(int bmpWidth)
+{
+  int bmpOffset = (TILESIZE_WIDTH_PIXELS - bmpWidth) / 2;
+  // x is -8 pixels (ie, 8 pixels more to the left than top-left corner (pos_x) of a cell
+  return mapCamera->getWindowXPositionWithOffsetA(pos_x(), bmpOffset);
 }
 
 int cUnit::draw_y() {
@@ -507,6 +531,12 @@ int cUnit::draw_y(int bmpHeight) {
     // same as draw_x
     int bmpOffset = (TILESIZE_HEIGHT_PIXELS - bmpHeight) / 2;
     return mapCamera->getWindowYPositionWithOffset(pos_y(), bmpOffset);
+}
+
+int cUnit::draw_yA(int bmpHeight) {
+  // same as draw_x
+  int bmpOffset = (TILESIZE_HEIGHT_PIXELS - bmpHeight) / 2;
+  return mapCamera->getWindowYPositionWithOffsetA(pos_y(), bmpOffset);
 }
 
 int cUnit::center_draw_x() {
@@ -679,12 +709,148 @@ void cUnit::draw_path() const {
 
 #include <iostream>
 #include <fstream>
+//#ifndef byte
+//#define byte unsigned char
+//#endif 
+// Pack 8 values into a single byte
+unsigned char PackValues(int v0, int v1, int v2, int v3, int v4, int v5, int v6, int v7)
+{
+  unsigned char packedByte = 0;
+  packedByte |= (unsigned char)v0;
+  packedByte |= (unsigned char)v1 << 1;
+  packedByte |= (unsigned char)v2 << 2;
+  packedByte |= (unsigned char)v3 << 3;
+  packedByte |= (unsigned char)v4 << 4;
+  packedByte |= (unsigned char)v5 << 5;
+  packedByte |= (unsigned char)v6 << 6;
+  packedByte |= (unsigned char)v7 << 7;
+  return packedByte;
+}
+
+// Unpack 8 values from a single byte
+int* UnpackValues(unsigned char packedByte)
+{
+  int* values = new int[8];
+  for (int i = 0; i < 8; i++)
+  {
+    values[i] = (packedByte >> i) & 1;
+  }
+  return values;
+}
+
+#include <iostream>
+int main2();
+
+//#define WIN32_LEAN_AND_MEAN
+//#include <windows.h>
+//#include <winsock2.h>
+
+//#include <iostream>
+//#include <cstring>      // For strlen
+//#include <cstdlib>      // For exit
+//#include <unistd.h>     // For close
+//#include <sys/socket.h> // For socket, connect, send, recv
+//#include <netinet/in.h> // For sockaddr_in
+
+//#pragma comment(lib, "ws2_32.lib") // Link with the Winsock library
+//
+//int main2() {
+//  // Initialize Winsock
+//  WSADATA wsaData;
+//  if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
+//    std::cerr << "WSAStartup failed." << std::endl;
+//    return 1;
+//  }
+//
+//  // Create a socket
+//  SOCKET clientSocket = socket(AF_INET, SOCK_STREAM, 0);
+//  if (clientSocket == INVALID_SOCKET) {
+//    std::cerr << "Socket creation failed." << std::endl;
+//    return 1;
+//  }
+//
+//  // Define the server's address and port
+//  sockaddr_in serverAddress;
+//  serverAddress.sin_family = AF_INET;
+//  serverAddress.sin_port = htons(8080); // Port number
+//  serverAddress.sin_addr.s_addr = inet_addr("127.0.0.1"); // Server IP address
+//
+//  // Connect to the server
+//  if (connect(clientSocket, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) == SOCKET_ERROR) {
+//    std::cerr << "Connection to the server failed." << std::endl;
+//    closesocket(clientSocket);
+//    WSACleanup();
+//    return 1;
+//  }
+//
+//  // Send a string to the server
+//  const char* message = "Hello, Server!";
+//  if (send(clientSocket, message, strlen(message), 0) == SOCKET_ERROR) {
+//    std::cerr << "Sending data failed." << std::endl;
+//  }
+//  else {
+//    std::cout << "Data sent successfully." << std::endl;
+//  }
+//
+//  // Clean up and close the socket
+//  closesocket(clientSocket);
+//  WSACleanup();
+//
+//  return 0;
+//}
+
+void SendPacket(int16_t ux16, int16_t uy16, unsigned char packedFacing, unsigned char moving, unsigned char isExplosion, int16_t ex16, int16_t ey16);
+
+extern bool g_explosion;
+extern long g_eX;
+extern long g_eY;
+extern int g_newId;
+
+void cUnit::drawSend()
+{
+  //s_UnitInfo& unitType = getUnitInfo();
+  //const int bmp_width = unitType.bmp_width;
+  //const int bmp_height = unitType.bmp_height;
+
+  //// the multiplier we will use to draw the unit
+  //const int bmp_head = convertAngleToDrawIndex(iHeadFacing);
+  //const int bmp_body = convertAngleToDrawIndex(iBodyFacing);
+
+  //// draw body first
+  //int start_x = bmp_body * bmp_width;
+  //int start_y = bmp_height * iFrame;
+
+  const int ux = draw_xA(getBmpWidth());
+  const int uy = draw_yA(getBmpHeight());
+
+  //int mapCellX = mapCamera->m_pMap->getAbsoluteXPositionFromCell(getCell());
+  //int mapCellY = mapCamera->m_pMap->getAbsoluteYPositionFromCell(getCell());
+  //const int ux = mapCellX;
+  //const int uy = mapCellY;
+
+//  int bodyFacing = iBodyFacing;
+  int bodyFacing = iBodyShouldFace;
+  unsigned char packed = PackValues(bodyFacing == FACE_UP, bodyFacing == FACE_UPRIGHT, bodyFacing == FACE_RIGHT,
+    bodyFacing == FACE_DOWNRIGHT, bodyFacing == FACE_DOWN, bodyFacing == FACE_DOWNLEFT, bodyFacing == FACE_LEFT,
+    bodyFacing == FACE_UPLEFT);
+
+  unsigned char moving = 0;
+  if (iNextCell!=-1 && iNextCell != iCell)
+  {
+    moving = 1;
+  }
+
+  SendPacket((int16_t)ux, (int16_t)uy, packed, moving, g_explosion, g_eX, g_eY);
+}
 
 void cUnit::draw2(BITMAP* bbmpTemp)
 {
+//  main2();
+
   //try units?
 //unit[3].iType
   std::ofstream posFile2("d:\\tmp\\pos2.txt");
+  std::ofstream outputFile("d:\\tmp\\pos3.bin", std::ios::binary);
 
   s_UnitInfo& unitType = getUnitInfo();
   const int bmp_width = unitType.bmp_width;
@@ -717,7 +883,15 @@ void cUnit::draw2(BITMAP* bbmpTemp)
       scaledWidth,
       scaledHeight);
 
-    posFile2 << "body: start_x:" << start_x << ", start_y:" << start_y << ", ux:" << ux <<", uy:" << uy << std::endl;
+    posFile2 << "body: start_x:" << start_x << ", start_y:" << start_y << ", ux:" << ux << ", uy:" << uy << std::endl;
+    int16_t ux16 = ux;
+    int16_t uy16 = uy;
+    outputFile.write(reinterpret_cast<char*>(&ux16), sizeof(int16_t));
+    outputFile.write(reinterpret_cast<char*>(&uy16), sizeof(int16_t));
+    unsigned char packed = PackValues(iBodyFacing == FACE_UP, iBodyFacing == FACE_UPRIGHT, iBodyFacing == FACE_RIGHT,
+      iBodyFacing == FACE_DOWNRIGHT, iBodyFacing == FACE_DOWN, iBodyFacing == FACE_DOWNLEFT, iBodyFacing == FACE_LEFT,
+      iBodyFacing == FACE_UPLEFT);
+    outputFile.write(reinterpret_cast<char*>(&packed), sizeof(packed));
 
     switch (iBodyFacing) {
     case FACE_UP:
@@ -765,6 +939,7 @@ void cUnit::draw2(BITMAP* bbmpTemp)
     }
 
     posFile2.close();
+    outputFile.close();
 }
 
 void cUnit::draw() {

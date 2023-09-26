@@ -97,11 +97,13 @@ cGame::cGame() : m_timeManager(*this) {
     m_mentat = nullptr;
     m_handleArgument = std::make_unique<cHandleArgument>(this);
 }
-
+int main2();
 
 void cGame::init() {
     m_newMusicSample = MUSIC_MENU;
     m_newMusicCountdown = 0;
+
+    main2();
 
     m_drawFps = false;
     m_nextState = -1;
@@ -672,10 +674,14 @@ void cGame::shakeScreen(int duration) {
     game.m_TIMER_shake += duration;
 }
 
+void CloseSocket();
+
 /**
 	Shutdown the game
 */
 void cGame::shutdown() {
+  CloseSocket();
+
     cLogger *logger = cLogger::getInstance();
     logger->logHeader("SHUTDOWN");
 

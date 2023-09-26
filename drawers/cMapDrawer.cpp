@@ -103,6 +103,11 @@ void cMapDrawer::Save()
       int absoluteYCoordinateOnMap = m_map->getAbsoluteYPositionFromCell(iCell);
       float fDrawY = mapCamera->getWindowYPosition(absoluteYCoordinateOnMap);
 
+      fDrawX = mapCamera->getWindowXPositionWithOffsetA(absoluteXCoordinateOnMap,0);
+      fDrawY = mapCamera->getWindowYPositionWithOffsetA(absoluteYCoordinateOnMap,0);
+
+      
+
       // Draw terrain
       if (cell->type < TERRAIN_BLOOM || cell->type > TERRAIN_WALL) {
         // somehow, invalid type
