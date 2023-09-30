@@ -1628,6 +1628,13 @@ int distanceBetweenCellAndCenterOfScreen(int iCell) {
     return 1;
 }
 
+std::vector<int> g_bNewId;
+std::vector<float> g_bX;
+std::vector<float> g_bY;
+std::vector<float> g_bTargX;
+std::vector<float> g_bTargY;
+std::vector<int> g_bType;
+
 /**
  * Creates a bullet, of type, starting at *fromCell* and moving towards *targetCell*. The 'unitWhichShoots' or
  * 'structureWhichShoots' is the owner of the bullet.
@@ -1656,15 +1663,22 @@ int create_bullet(int type, int fromCell, int targetCell, int unitWhichShoots, i
 
     cBullet &newBullet = bullet[new_id];
     newBullet.init();
+    newBullet.newID = new_id;
+    g_bNewId.push_back(new_id);
+    g_bType.push_back(type);
 
     newBullet.iType = type;
     newBullet.posX = map.getAbsoluteXPositionFromCellCentered(fromCell);
     newBullet.posY = map.getAbsoluteYPositionFromCellCentered(fromCell);
     newBullet.iOwnerStructure = structureWhichShoots;
     newBullet.iOwnerUnit = unitWhichShoots;
+    g_bX.push_back(newBullet.posX);
+    g_bY.push_back(newBullet.posY);
 
     newBullet.targetX = map.getAbsoluteXPositionFromCellCentered(targetCell);
     newBullet.targetY = map.getAbsoluteYPositionFromCellCentered(targetCell);
+    g_bTargX.push_back(newBullet.targetX);
+    g_bTargY.push_back(newBullet.targetY);
 
     // if we start firing from a mountain, flag it so the bullet won't be blocked by mountains along
     // the way

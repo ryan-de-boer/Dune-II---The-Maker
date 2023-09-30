@@ -799,15 +799,34 @@ int main2();
 //  return 0;
 //}
 
-void SendPacket(int16_t ux16, int16_t uy16, unsigned char packedFacing, unsigned char moving, unsigned char isExplosion, int16_t ex16, int16_t ey16);
+void SendPacket(int16_t ux16, int16_t uy16, unsigned char packedFacing, unsigned char moving, 
+  unsigned char isExplosion, int16_t ex16, int16_t ey16, 
+  std::vector<int>& bNewId, std::vector<float>& bX, std::vector<float>& bY, 
+  std::vector<float>& bTargX, std::vector<float>& bTargY, 
+  std::vector<int>& bType, 
+  std::map<int/*newId*/, float/*posX*/>& bUpdateX, std::map<int/*newId*/, float/*posY*/>& bUpdateY);
 
 extern bool g_explosion;
 extern long g_eX;
 extern long g_eY;
 extern int g_newId;
 
+extern std::vector<int> g_bNewId;
+extern std::vector<float> g_bX;
+extern std::vector<float> g_bY;
+extern std::vector<float> g_bTargX;
+extern std::vector<float> g_bTargY;
+extern std::vector<int> g_bType;
+
+extern std::map<int/*newId*/, float/*posX*/> g_bUpdateX;
+extern std::map<int/*newId*/, float/*posY*/> g_bUpdateY;
+
 void cUnit::drawSend()
 {
+//  s_UnitInfo& unitInfo = getUnitInfo();
+//  int bulletType = unitInfo.bulletType;
+
+
   //s_UnitInfo& unitType = getUnitInfo();
   //const int bmp_width = unitType.bmp_width;
   //const int bmp_height = unitType.bmp_height;
@@ -840,8 +859,10 @@ void cUnit::drawSend()
     moving = 1;
   }
 
-  SendPacket((int16_t)ux, (int16_t)uy, packed, moving, g_explosion, g_eX, g_eY);
+  SendPacket((int16_t)ux, (int16_t)uy, packed, moving, g_explosion, g_eX, g_eY, g_bNewId, g_bX, g_bY, g_bTargX, g_bTargY, g_bType, g_bUpdateX, g_bUpdateY);
 }
+
+
 
 void cUnit::draw2(BITMAP* bbmpTemp)
 {

@@ -2,7 +2,7 @@
 #include <fstream>
 #include <windows.h>
 #include <winsock2.h>
-
+#include <vector>
 SOCKET clientSocket;
 
 int InitSocket()
@@ -95,16 +95,42 @@ int main2() {
 }
 
 extern bool g_explosion;
+#include <map>
 
-void SendPacket(int16_t ux16, int16_t uy16, unsigned char packedFacing, unsigned char moving, unsigned char isExplosion, int16_t ex16, int16_t ey16)
+#include <chrono>
+std::chrono::time_point<std::chrono::high_resolution_clock> g_timerStart;
+bool g_timerEnabled = false;
+
+void SendPacket(int16_t ux16, int16_t uy16, unsigned char packedFacing, unsigned char moving, 
+  unsigned char isExplosion, int16_t ex16, int16_t ey16, 
+  std::vector<int>& bNewId, std::vector<float>& bX, std::vector<float>& bY,
+  std::vector<float>& bTargX, std::vector<float>& bTargY, 
+  std::vector<int>& bType,
+  std::map<int/*newId*/, float/*posX*/>& bUpdateX, std::map<int/*newId*/, float/*posY*/>& bUpdateY)
 {
   unsigned char byteToSend = 0xFE;
   if (send(clientSocket, reinterpret_cast<const char*>(&byteToSend), 1, 0) == SOCKET_ERROR) {
     std::cerr << "Sending data failed." << std::endl;
     //    socketFile << "Sending data failed." << std::endl;
 
-    CloseSocket();
-    InitSocket();
+    if (!g_timerEnabled)
+    {
+      g_timerStart = std::chrono::high_resolution_clock::now();
+      g_timerEnabled = true;
+    }
+    else
+    {
+      auto end = std::chrono::high_resolution_clock::now();
+      std::chrono::duration<double> elapsed_seconds = end - g_timerStart;
+      if (elapsed_seconds.count() > 10.0)
+      {
+        CloseSocket();
+        InitSocket();
+        g_timerEnabled = false;
+      }
+    }
+
+    return;
   }
   else {
   //  std::cout << "Data sent successfully." << std::endl;
@@ -166,6 +192,89 @@ void SendPacket(int16_t ux16, int16_t uy16, unsigned char packedFacing, unsigned
     std::cerr << "Sending data failed." << std::endl;
     //    socketFile << "Sending data failed." << std::endl;
   }
+  //max size is 300
+  int bulletSize = bNewId.size();
+  if (send(clientSocket, reinterpret_cast<const char*>(&bulletSize), sizeof(bulletSize), 0) == SOCKET_ERROR) {
+    std::cerr << "Sending data failed." << std::endl;
+    //    socketFile << "Sending data failed." << std::endl;
+  }
+  for (int i = 0; i < bulletSize; ++i)
+  {
+    int newId = bNewId[i];
+    float bulletX = bX[i];
+    float bulletY = bY[i];
+    float bulletTargetX = bTargX[i];
+    float bulletTargetY = bTargY[i];
+    int bulletType = bType[i];
+    if (send(clientSocket, reinterpret_cast<const char*>(&newId), sizeof(newId), 0) == SOCKET_ERROR) {
+      std::cerr << "Sending data failed." << std::endl;
+      //    socketFile << "Sending data failed." << std::endl;
+    }
+    if (send(clientSocket, reinterpret_cast<const char*>(&bulletX), sizeof(bulletX), 0) == SOCKET_ERROR) {
+      std::cerr << "Sending data failed." << std::endl;
+      //    socketFile << "Sending data failed." << std::endl;
+    }
+    if (send(clientSocket, reinterpret_cast<const char*>(&bulletY), sizeof(bulletY), 0) == SOCKET_ERROR) {
+      std::cerr << "Sending data failed." << std::endl;
+      //    socketFile << "Sending data failed." << std::endl;
+    }
+    if (send(clientSocket, reinterpret_cast<const char*>(&bulletTargetX), sizeof(bulletTargetX), 0) == SOCKET_ERROR) {
+      std::cerr << "Sending data failed." << std::endl;
+      //    socketFile << "Sending data failed." << std::endl;
+    }
+    if (send(clientSocket, reinterpret_cast<const char*>(&bulletTargetY), sizeof(bulletTargetY), 0) == SOCKET_ERROR) {
+      std::cerr << "Sending data failed." << std::endl;
+      //    socketFile << "Sending data failed." << std::endl;
+    }
+    if (send(clientSocket, reinterpret_cast<const char*>(&bulletType), sizeof(bulletType), 0) == SOCKET_ERROR) {
+      std::cerr << "Sending data failed." << std::endl;
+      //    socketFile << "Sending data failed." << std::endl;
+    }
+  }
+  bNewId.clear();
+  bX.clear();
+  bY.clear();
+  bTargX.clear();
+  bTargY.clear();
+  bType.clear();
+
+  int numBulletXUpdates = bUpdateX.size();
+  if (send(clientSocket, reinterpret_cast<const char*>(&numBulletXUpdates), sizeof(numBulletXUpdates), 0) == SOCKET_ERROR) {
+    std::cerr << "Sending data failed." << std::endl;
+    //    socketFile << "Sending data failed." << std::endl;
+  }
+  for (auto it = bUpdateX.begin(); it != bUpdateX.end(); ++it) {
+    int key = it->first;
+    float value = it->second;
+    if (send(clientSocket, reinterpret_cast<const char*>(&key), sizeof(key), 0) == SOCKET_ERROR) {
+      std::cerr << "Sending data failed." << std::endl;
+      //    socketFile << "Sending data failed." << std::endl;
+    }
+    if (send(clientSocket, reinterpret_cast<const char*>(&value), sizeof(value), 0) == SOCKET_ERROR) {
+      std::cerr << "Sending data failed." << std::endl;
+      //    socketFile << "Sending data failed." << std::endl;
+    }
+  }
+  int numBulletYUpdates = bUpdateY.size();
+  if (send(clientSocket, reinterpret_cast<const char*>(&numBulletYUpdates), sizeof(numBulletYUpdates), 0) == SOCKET_ERROR) {
+    std::cerr << "Sending data failed." << std::endl;
+    //    socketFile << "Sending data failed." << std::endl;
+  }
+  for (auto it = bUpdateY.begin(); it != bUpdateY.end(); ++it) {
+    int key = it->first;
+    float value = it->second;
+    if (send(clientSocket, reinterpret_cast<const char*>(&key), sizeof(key), 0) == SOCKET_ERROR) {
+      std::cerr << "Sending data failed." << std::endl;
+      //    socketFile << "Sending data failed." << std::endl;
+    }
+    if (send(clientSocket, reinterpret_cast<const char*>(&value), sizeof(value), 0) == SOCKET_ERROR) {
+      std::cerr << "Sending data failed." << std::endl;
+      //    socketFile << "Sending data failed." << std::endl;
+    }
+  }
+  // or clear when bullet dies?
+  bUpdateX.clear();
+  bUpdateY.clear();
 }
 
 void CloseSocket()

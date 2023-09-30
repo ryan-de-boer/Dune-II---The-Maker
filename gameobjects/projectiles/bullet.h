@@ -50,6 +50,8 @@ public:
 
     int TIMER_frame;
 
+    int newID;
+
 private:
 
     int getBulletBmpWidth() const;

@@ -178,6 +178,8 @@ void cBullet::thinkFast() {
     think_move();
 }
 
+std::map<int/*newId*/, float/*posX*/> g_bUpdateX;
+std::map<int/*newId*/, float/*posY*/> g_bUpdateY;
 
 void cBullet::think_move() {
     iCell = mapCamera->getCellFromAbsolutePosition(posX, posY);
@@ -193,6 +195,8 @@ void cBullet::think_move() {
 
     // move bullet a bit towards its goal
     moveBulletTowardsGoal();
+    g_bUpdateX[this->newID] = posX;
+    g_bUpdateY[this->newID] = posY;
 
     if (isAtDestination()) {
         arrivedAtDestinationLogic();
@@ -656,6 +660,18 @@ int cBullet::getRandomX() const {
 
 void cBullet::die() {
     bAlive = false;
+
+    g_bUpdateX[this->newID] = 0;
+    g_bUpdateY[this->newID] = 0;
+
+    auto it = g_bUpdateX.find(this->newID);
+    if (it != g_bUpdateX.end()) {
+      g_bUpdateX.erase(it);
+    }
+    auto it2 = g_bUpdateY.find(this->newID);
+    if (it2 != g_bUpdateY.end()) {
+      g_bUpdateY.erase(it2);
+    }
 }
 
 bool cBullet::canDamageGround() const {
