@@ -165,6 +165,7 @@ public:
   void draw();
   void draw2(BITMAP* bbmpTemp);
   void drawSend();
+  void sync();
   void draw_path() const;
     bool isValid() const;     // valid unit?
 

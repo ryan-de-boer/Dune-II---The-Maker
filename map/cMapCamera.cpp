@@ -314,6 +314,19 @@ void cMapCamera::onKeyHold(const cKeyboardEvent &event) {
 #include <iostream>
 #include <fstream>
 
+extern std::vector<int> g_unewID;
+extern std::vector<int16_t> g_uux;
+extern std::vector<int16_t> g_uuy;
+extern std::vector<unsigned char> g_upacked;
+extern std::vector<unsigned char> g_umoving;
+
+extern bool g_infiniteStructureHealth;
+extern bool g_infiniteUnitHealth;
+
+#include "player/cPlayer.h"
+
+extern cPlayer        players[MAX_PLAYERS];
+
 void cMapCamera::onKeyPressed(const cKeyboardEvent &event) {
     if (event.hasKey(KEY_LEFT)) {
         setMoveX(0.0f, m_moveSpeedBorderOrKeys);
@@ -333,6 +346,24 @@ void cMapCamera::onKeyPressed(const cKeyboardEvent &event) {
     if (event.hasKey(KEY_DOWN)) {
         setMoveY(0.0f, m_moveSpeedBorderOrKeys);
         m_keyPressedDown = false;
+    }
+
+    if (event.hasKey(KEY_I))
+    {
+      cPlayer& humanPlayer = players[HUMAN];
+      g_infiniteStructureHealth = g_infiniteUnitHealth = !g_infiniteUnitHealth;
+      if (g_infiniteUnitHealth)
+      {
+        humanPlayer.addNotification("Infinite health ON.", eNotificationType::NEUTRAL);
+      }
+      else
+      {
+        humanPlayer.addNotification("Infinite health OFF.", eNotificationType::NEUTRAL);
+      }
+
+//      humanPlayer.addNotification("No more Harvester left, reinforcing...", eNotificationType::BAD);
+      //humanPlayer.addNotification("You've lost a Harvester.", eNotificationType::PRIORITY);
+      //humanPlayer.addNotification("You have one Harvester left.", eNotificationType::NEUTRAL);
     }
 
     if (event.hasKey(KEY_T))
@@ -368,10 +399,23 @@ void cMapCamera::onKeyPressed(const cKeyboardEvent &event) {
           float pX = unit[i].pos_x();
           float pY = unit[i].pos_y();
           //i==3 is top right harkonan soldier first level
-
+          //i==6 is right buggy first level
           posFile << i << " " << pos << ", px: " << pX <<", py: "<<pY<<", cx: " << x << ", cy: " << y << ", player: " << unit[i].getPlayerId() << std::endl;
         }
       }
+
+      posFile << "newID" << std::endl;
+      for (unsigned int i=0;i< g_unewID.size();++i)
+      {
+        int newID = g_unewID[i];
+        int ux = g_uux[i];
+        int uy = g_uuy[i];
+        unsigned char packed = g_upacked[i];
+        unsigned char moving = g_umoving[i];
+
+        posFile << i << " " << newID << ", ux: " << ux << ", uy: " << uy << ", packed: " << packed << ", moving: " << moving << std::endl;
+      }
+
       posFile.close();
     }
 }

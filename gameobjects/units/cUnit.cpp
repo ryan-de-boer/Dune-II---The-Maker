@@ -45,6 +45,15 @@ ASTAR temp_map[16384]; // 4096 = 64x64 map, 16384 = 128x128 map
 // Class specific on top
 // Globals on bottom
 
+std::vector<int> g_unewID;
+std::vector<int16_t> g_uux;
+std::vector<int16_t> g_uuy;
+std::vector<int16_t> g_Puux;
+std::vector<int16_t> g_Puuy;
+std::vector<unsigned char> g_upacked;
+std::vector<unsigned char> g_umoving;
+unsigned char PackValues(int v0, int v1, int v2, int v3, int v4, int v5, int v6, int v7);
+
 void cUnit::init(int i) {
     mission = -1;
     boundParticleId = -1;
@@ -139,6 +148,48 @@ void cUnit::init(int i) {
     TIMER_attack = 0;
     TIMER_wormtrail = 0;
     TIMER_movedelay = 0;
+
+    if ((int)g_unewID.size() <= iID)
+    {
+      g_unewID.push_back(iID);
+      const int ux = draw_xA(getBmpWidth());
+      const int uy = draw_yA(getBmpHeight());
+      g_uux.push_back(ux);
+      g_uuy.push_back(uy);
+      g_Puux.push_back(ux);
+      g_Puuy.push_back(uy);
+
+      int bodyFacing = iBodyShouldFace;
+      unsigned char packed = PackValues(bodyFacing == FACE_UP, bodyFacing == FACE_UPRIGHT, bodyFacing == FACE_RIGHT,
+        bodyFacing == FACE_DOWNRIGHT, bodyFacing == FACE_DOWN, bodyFacing == FACE_DOWNLEFT, bodyFacing == FACE_LEFT,
+        bodyFacing == FACE_UPLEFT);
+      g_upacked.push_back(packed);
+      unsigned char moving = 0;
+      if (iNextCell != -1 && iNextCell != iCell)
+      {
+        moving = 1;
+      }
+      g_umoving.push_back(moving);
+    }
+    else if (iID!=-1)
+    {
+      g_unewID[iID] = iID;
+      const int ux = draw_xA(getBmpWidth());
+      const int uy = draw_yA(getBmpHeight());
+      g_uux[iID] = ux;
+      g_uuy[iID] = uy;
+      int bodyFacing = iBodyShouldFace;
+      unsigned char packed = PackValues(bodyFacing == FACE_UP, bodyFacing == FACE_UPRIGHT, bodyFacing == FACE_RIGHT,
+        bodyFacing == FACE_DOWNRIGHT, bodyFacing == FACE_DOWN, bodyFacing == FACE_DOWNLEFT, bodyFacing == FACE_LEFT,
+        bodyFacing == FACE_UPLEFT);
+      g_upacked[iID] = packed;
+      unsigned char moving = 0;
+      if (iNextCell != -1 && iNextCell != iCell)
+      {
+        moving = 1;
+      }
+      g_umoving[iID]=moving;
+    }
 }
 
 void cUnit::recreateDimensions() {
@@ -799,12 +850,12 @@ int main2();
 //  return 0;
 //}
 
-void SendPacket(int16_t ux16, int16_t uy16, unsigned char packedFacing, unsigned char moving, 
-  unsigned char isExplosion, int16_t ex16, int16_t ey16, 
-  std::vector<int>& bNewId, std::vector<float>& bX, std::vector<float>& bY, 
-  std::vector<float>& bTargX, std::vector<float>& bTargY, 
-  std::vector<int>& bType, 
-  std::map<int/*newId*/, float/*posX*/>& bUpdateX, std::map<int/*newId*/, float/*posY*/>& bUpdateY);
+//void SendPacket(int16_t ux16, int16_t uy16, unsigned char packedFacing, unsigned char moving, 
+//  unsigned char isExplosion, int16_t ex16, int16_t ey16, 
+//  std::vector<int>& bNewId, std::vector<float>& bX, std::vector<float>& bY, 
+//  std::vector<float>& bTargX, std::vector<float>& bTargY, 
+//  std::vector<int>& bType, 
+//  std::map<int/*newId*/, float/*posX*/>& bUpdateX, std::map<int/*newId*/, float/*posY*/>& bUpdateY);
 
 extern bool g_explosion;
 extern long g_eX;
@@ -821,47 +872,92 @@ extern std::vector<int> g_bType;
 extern std::map<int/*newId*/, float/*posX*/> g_bUpdateX;
 extern std::map<int/*newId*/, float/*posY*/> g_bUpdateY;
 
+extern std::vector<int> g_unewID;
+extern std::vector<int16_t> g_uux;
+extern std::vector<int16_t> g_uuy;
+extern std::vector<unsigned char> g_upacked;
+extern std::vector<unsigned char> g_umoving;
+
 void cUnit::drawSend()
 {
-//  s_UnitInfo& unitInfo = getUnitInfo();
-//  int bulletType = unitInfo.bulletType;
 
-
-  //s_UnitInfo& unitType = getUnitInfo();
-  //const int bmp_width = unitType.bmp_width;
-  //const int bmp_height = unitType.bmp_height;
-
-  //// the multiplier we will use to draw the unit
-  //const int bmp_head = convertAngleToDrawIndex(iHeadFacing);
-  //const int bmp_body = convertAngleToDrawIndex(iBodyFacing);
-
-  //// draw body first
-  //int start_x = bmp_body * bmp_width;
-  //int start_y = bmp_height * iFrame;
-
-  const int ux = draw_xA(getBmpWidth());
-  const int uy = draw_yA(getBmpHeight());
-
-  //int mapCellX = mapCamera->m_pMap->getAbsoluteXPositionFromCell(getCell());
-  //int mapCellY = mapCamera->m_pMap->getAbsoluteYPositionFromCell(getCell());
-  //const int ux = mapCellX;
-  //const int uy = mapCellY;
-
-//  int bodyFacing = iBodyFacing;
-  int bodyFacing = iBodyShouldFace;
-  unsigned char packed = PackValues(bodyFacing == FACE_UP, bodyFacing == FACE_UPRIGHT, bodyFacing == FACE_RIGHT,
-    bodyFacing == FACE_DOWNRIGHT, bodyFacing == FACE_DOWN, bodyFacing == FACE_DOWNLEFT, bodyFacing == FACE_LEFT,
-    bodyFacing == FACE_UPLEFT);
-
-  unsigned char moving = 0;
-  if (iNextCell!=-1 && iNextCell != iCell)
-  {
-    moving = 1;
-  }
-
-  SendPacket((int16_t)ux, (int16_t)uy, packed, moving, g_explosion, g_eX, g_eY, g_bNewId, g_bX, g_bY, g_bTargX, g_bTargY, g_bType, g_bUpdateX, g_bUpdateY);
 }
 
+void cUnit::sync()
+{
+//  //  s_UnitInfo& unitInfo = getUnitInfo();
+////  int bulletType = unitInfo.bulletType;
+//
+//
+//  //s_UnitInfo& unitType = getUnitInfo();
+//  //const int bmp_width = unitType.bmp_width;
+//  //const int bmp_height = unitType.bmp_height;
+//
+//  //// the multiplier we will use to draw the unit
+//  //const int bmp_head = convertAngleToDrawIndex(iHeadFacing);
+//  //const int bmp_body = convertAngleToDrawIndex(iBodyFacing);
+//
+//  //// draw body first
+//  //int start_x = bmp_body * bmp_width;
+//  //int start_y = bmp_height * iFrame;
+//
+//  const int ux = draw_xA(getBmpWidth());
+//  const int uy = draw_yA(getBmpHeight());
+//
+//  //int mapCellX = mapCamera->m_pMap->getAbsoluteXPositionFromCell(getCell());
+//  //int mapCellY = mapCamera->m_pMap->getAbsoluteYPositionFromCell(getCell());
+//  //const int ux = mapCellX;
+//  //const int uy = mapCellY;
+//
+////  int bodyFacing = iBodyFacing;
+//  int bodyFacing = iBodyShouldFace;
+//  unsigned char packed = PackValues(bodyFacing == FACE_UP, bodyFacing == FACE_UPRIGHT, bodyFacing == FACE_RIGHT,
+//    bodyFacing == FACE_DOWNRIGHT, bodyFacing == FACE_DOWN, bodyFacing == FACE_DOWNLEFT, bodyFacing == FACE_LEFT,
+//    bodyFacing == FACE_UPLEFT);
+//
+//  unsigned char moving = 0;
+//  if (iNextCell != -1 && iNextCell != iCell)
+//  {
+//    moving = 1;
+//  }
+
+  auto it = std::find(g_unewID.begin(), g_unewID.end(), iID);
+  if (it != g_unewID.end()) {
+    int index = std::distance(g_unewID.begin(), it);
+
+    const int ux = draw_xA(getBmpWidth());
+    const int uy = draw_yA(getBmpHeight());
+    //bool pMov = false;
+    //if (g_uux[index] != ux || g_uuy[index] != uy)
+    //{
+    //  pMov = true;
+    //}
+    g_uux[index] = ux;
+    g_uuy[index] = uy;
+    int bodyFacing = iBodyShouldFace;
+    unsigned char packed = PackValues(bodyFacing == FACE_UP, bodyFacing == FACE_UPRIGHT, bodyFacing == FACE_RIGHT,
+      bodyFacing == FACE_DOWNRIGHT, bodyFacing == FACE_DOWN, bodyFacing == FACE_DOWNLEFT, bodyFacing == FACE_LEFT,
+      bodyFacing == FACE_UPLEFT);
+    g_upacked[index] = packed;
+    unsigned char moving = 0;
+    if (iNextCell != -1 && iNextCell != iCell && iBodyFacing== iBodyShouldFace)//&& pMov)//&& TIMER_movewait == 0 && TIMER_movedelay == 0)// && TIMER_turn==0)
+    {
+      moving = 1;
+    }
+    g_umoving[index] = moving;
+
+
+    //   std::cout << "Element " << target << " found at index " << std::distance(numbers.begin(), it) << std::endl;
+  }
+  else {
+    //   std::cout << "Element " << target << " not found in the vector" << std::endl;
+  }
+
+
+
+
+  // SendPacket((int16_t)ux, (int16_t)uy, packed, moving, g_explosion, g_eX, g_eY, g_bNewId, g_bX, g_bY, g_bTargX, g_bTargY, g_bType, g_bUpdateX, g_bUpdateY);
+}
 
 
 void cUnit::draw2(BITMAP* bbmpTemp)

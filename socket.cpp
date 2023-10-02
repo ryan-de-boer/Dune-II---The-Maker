@@ -101,7 +101,8 @@ extern bool g_explosion;
 std::chrono::time_point<std::chrono::high_resolution_clock> g_timerStart;
 bool g_timerEnabled = false;
 
-void SendPacket(int16_t ux16, int16_t uy16, unsigned char packedFacing, unsigned char moving, 
+void SendPacket(std::vector<int>& unewID, std::vector<int16_t>& uux, std::vector<int16_t>& uuy, 
+  std::vector<unsigned char>& upacked, std::vector<unsigned char>& umoving,
   unsigned char isExplosion, int16_t ex16, int16_t ey16, 
   std::vector<int>& bNewId, std::vector<float>& bX, std::vector<float>& bY,
   std::vector<float>& bTargX, std::vector<float>& bTargY, 
@@ -137,38 +138,74 @@ void SendPacket(int16_t ux16, int16_t uy16, unsigned char packedFacing, unsigned
     //   socketFile << "Data sent successfully." << std::endl;
   }
 
-  if (send(clientSocket, reinterpret_cast<const char*>(&ux16), sizeof(ux16), 0) == SOCKET_ERROR) {
+  int unewIdSize = unewID.size();
+  if (send(clientSocket, reinterpret_cast<const char*>(&unewIdSize), sizeof(unewIdSize), 0) == SOCKET_ERROR) {
     std::cerr << "Sending data failed." << std::endl;
     //    socketFile << "Sending data failed." << std::endl;
   }
-  else {
-  //  std::cout << "Data sent successfully." << std::endl;
-    //   socketFile << "Data sent successfully." << std::endl;
+  for (unsigned int i = 0; i < unewID.size(); ++i)
+  {
+    int id = unewID[i];
+    if (send(clientSocket, reinterpret_cast<const char*>(&id), sizeof(id), 0) == SOCKET_ERROR) {
+      std::cerr << "Sending data failed." << std::endl;
+      //    socketFile << "Sending data failed." << std::endl;
+    }
+
+    int16_t ux = uux[id];
+    int16_t uy = uuy[id];
+    unsigned char packed = upacked[id];
+    unsigned char moving = umoving[id];
+    if (send(clientSocket, reinterpret_cast<const char*>(&ux), sizeof(ux), 0) == SOCKET_ERROR) {
+      std::cerr << "Sending data failed." << std::endl;
+      //    socketFile << "Sending data failed." << std::endl;
+    }
+    if (send(clientSocket, reinterpret_cast<const char*>(&uy), sizeof(uy), 0) == SOCKET_ERROR) {
+      std::cerr << "Sending data failed." << std::endl;
+      //    socketFile << "Sending data failed." << std::endl;
+    }
+    if (send(clientSocket, reinterpret_cast<const char*>(&packed), sizeof(packed), 0) == SOCKET_ERROR) {
+      std::cerr << "Sending data failed." << std::endl;
+      //    socketFile << "Sending data failed." << std::endl;
+    }
+    if (send(clientSocket, reinterpret_cast<const char*>(&moving), sizeof(moving), 0) == SOCKET_ERROR) {
+      std::cerr << "Sending data failed." << std::endl;
+      //    socketFile << "Sending data failed." << std::endl;
+    }
   }
-  if (send(clientSocket, reinterpret_cast<const char*>(&uy16), sizeof(uy16), 0) == SOCKET_ERROR) {
-    std::cerr << "Sending data failed." << std::endl;
-    //    socketFile << "Sending data failed." << std::endl;
-  }
-  else {
-  //  std::cout << "Data sent successfully." << std::endl;
-    //   socketFile << "Data sent successfully." << std::endl;
-  }
-  if (send(clientSocket, reinterpret_cast<const char*>(&packedFacing), sizeof(packedFacing), 0) == SOCKET_ERROR) {
-    std::cerr << "Sending data failed." << std::endl;
-    //    socketFile << "Sending data failed." << std::endl;
-  }
-  else {
- //   std::cout << "Data sent successfully." << std::endl;
-    //   socketFile << "Data sent successfully." << std::endl;
-  }
-  if (send(clientSocket, reinterpret_cast<const char*>(&moving), sizeof(moving), 0) == SOCKET_ERROR) {
-    std::cerr << "Sending data failed." << std::endl;
-    //    socketFile << "Sending data failed." << std::endl;
-  }
-  else {
-  //  std::cout << "Data sent successfully." << std::endl;
-    //   socketFile << "Data sent successfully." << std::endl;
-  }
+
+
+ // if (send(clientSocket, reinterpret_cast<const char*>(&ux16), sizeof(ux16), 0) == SOCKET_ERROR) {
+ //   std::cerr << "Sending data failed." << std::endl;
+ //   //    socketFile << "Sending data failed." << std::endl;
+ // }
+ // else {
+ // //  std::cout << "Data sent successfully." << std::endl;
+ //   //   socketFile << "Data sent successfully." << std::endl;
+ // }
+ // if (send(clientSocket, reinterpret_cast<const char*>(&uy16), sizeof(uy16), 0) == SOCKET_ERROR) {
+ //   std::cerr << "Sending data failed." << std::endl;
+ //   //    socketFile << "Sending data failed." << std::endl;
+ // }
+ // else {
+ // //  std::cout << "Data sent successfully." << std::endl;
+ //   //   socketFile << "Data sent successfully." << std::endl;
+ // }
+ // if (send(clientSocket, reinterpret_cast<const char*>(&packedFacing), sizeof(packedFacing), 0) == SOCKET_ERROR) {
+ //   std::cerr << "Sending data failed." << std::endl;
+ //   //    socketFile << "Sending data failed." << std::endl;
+ // }
+ // else {
+ ////   std::cout << "Data sent successfully." << std::endl;
+ //   //   socketFile << "Data sent successfully." << std::endl;
+ // }
+ // if (send(clientSocket, reinterpret_cast<const char*>(&moving), sizeof(moving), 0) == SOCKET_ERROR) {
+ //   std::cerr << "Sending data failed." << std::endl;
+ //   //    socketFile << "Sending data failed." << std::endl;
+ // }
+ // else {
+ // //  std::cout << "Data sent successfully." << std::endl;
+ //   //   socketFile << "Data sent successfully." << std::endl;
+ // }
   if (isExplosion)
   {
     if (send(clientSocket, reinterpret_cast<const char*>(&isExplosion), sizeof(isExplosion), 0) == SOCKET_ERROR) {

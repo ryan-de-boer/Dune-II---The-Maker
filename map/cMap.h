@@ -176,6 +176,7 @@ public:
     int  mouse_draw_y();
 	void draw_units_2nd();
 	void draw_units();
+  void sync();
     void draw_bullets();
 
     void smudge_increase(int iType, int iCell);
