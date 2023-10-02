@@ -7,6 +7,8 @@
 
 #define IDEAL_FPS	60
 
+//#define IDEAL_FPS	120
+
 // MAP ID
 #define MAPID_UNITS  0
 #define MAPID_STRUCTURES 1
