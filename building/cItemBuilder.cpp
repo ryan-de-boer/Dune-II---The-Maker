@@ -31,6 +31,8 @@ cItemBuilder::~cItemBuilder() {
     removeAllItems();
 }
 
+extern bool g_instantBuild;
+
 /**
  * Timer cap is the 'delay' to consider how much the timer must have passed before progressing one tick for
  * building things. Ie, consider something has a buildTime of 200, this means the game timer (5 ms) has to run 200 times
@@ -70,6 +72,10 @@ cItemBuilder::~cItemBuilder() {
  */
 int cItemBuilder::getTimerCap(cBuildingListItem *item) {
 	int iTimerCap = game.isDebugMode() ? cBuildingListItem::DebugTimerCap : cBuildingListItem::DefaultTimerCap;
+  if (g_instantBuild)
+  {
+    iTimerCap = 0;
+  }
 
     // when player has low power, produce twice as slow
     if (item->getBuildType() == UNIT) {

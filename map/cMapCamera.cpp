@@ -326,6 +326,7 @@ extern bool g_infiniteUnitHealth;
 #include "player/cPlayer.h"
 
 extern cPlayer        players[MAX_PLAYERS];
+bool g_instantBuild = false;
 
 void cMapCamera::onKeyPressed(const cKeyboardEvent &event) {
     if (event.hasKey(KEY_LEFT)) {
@@ -365,6 +366,42 @@ void cMapCamera::onKeyPressed(const cKeyboardEvent &event) {
       //humanPlayer.addNotification("You've lost a Harvester.", eNotificationType::PRIORITY);
       //humanPlayer.addNotification("You have one Harvester left.", eNotificationType::NEUTRAL);
     }
+
+    if (event.hasKey(KEY_F1))
+    {
+      //GetCredits
+      players[0].giveCredits(1000);
+    }
+    if (event.hasKey(KEY_F2))
+    {
+      //GetLotsOfCredits
+      players[0].giveCredits(299999);
+    }
+    if (event.hasKey(KEY_F3))
+    {
+      //ResetCredits
+      players[0].setCredits(1000);
+    }
+    if (event.hasKey(KEY_F4))
+    {
+      //RevealAllShroud
+      map.clear_all(0);
+    }
+    if (event.hasKey(KEY_F5))
+    {
+      //Instant Build
+      cPlayer& humanPlayer = players[HUMAN];
+      g_instantBuild = !g_instantBuild;
+      if (g_instantBuild)
+      {
+        humanPlayer.addNotification("Instant Build ON.", eNotificationType::NEUTRAL);
+      }
+      else
+      {
+        humanPlayer.addNotification("Instant Build OFF.", eNotificationType::NEUTRAL);
+      }
+    }
+    
 
     if (event.hasKey(KEY_T))
     {

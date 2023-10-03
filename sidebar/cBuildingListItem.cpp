@@ -4,6 +4,7 @@
 #include "sidebar/cBuildingList.h"
 
 #include <fmt/core.h>
+extern bool g_instantBuild;
 
 cBuildingListItem::cBuildingListItem(eBuildType type, int buildId, int cost, int icon, cBuildingList *list, int subList, bool queuable) {
     assert(buildId >= 0);
@@ -31,6 +32,8 @@ cBuildingListItem::cBuildingListItem(eBuildType type, int buildId, int cost, int
     TIMER_flashing = 500;
 
     timerCap = game.isDebugMode() ? cBuildingListItem::DebugTimerCap : cBuildingListItem::DefaultTimerCap;
+    if (g_instantBuild)
+      timerCap = 0;
 
     myList = list; // this can be nullptr! (it will be set from the outside by cBuildingList convenience methods)
 
