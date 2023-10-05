@@ -499,10 +499,14 @@ extern std::vector<int16_t> g_uuy;
 extern std::vector<unsigned char> g_upacked;
 extern std::vector<unsigned char> g_umoving;
 
-extern bool g_explosion;
-extern long g_eX;
-extern long g_eY;
-extern int g_newId;
+//extern bool g_explosion;
+//extern long g_eX;
+//extern long g_eY;
+//extern int g_newId;
+extern std::vector<long> g_eXList;
+extern std::vector<long> g_eYList;
+extern std::vector<int> g_enewIdList;
+extern std::vector<int> g_etypeList;
 
 extern std::vector<int> g_bNewId;
 extern std::vector<float> g_bX;
@@ -517,7 +521,10 @@ extern std::map<int/*newId*/, float/*posY*/> g_bUpdateY;
 
 void SendPacket(std::vector<int>& unewID, std::vector<int16_t>& uux, std::vector<int16_t>& uuy,
   std::vector<unsigned char>& upacked, std::vector<unsigned char>& umoving,
-  unsigned char isExplosion, int16_t ex16, int16_t ey16,
+
+  //  unsigned char isExplosion, int16_t ex16, int16_t ey16,
+  std::vector<long>& eXList, std::vector<long>& eYList, std::vector<int>& enewIdList, std::vector<int>& etypeList,
+
   std::vector<int>& bNewId, std::vector<float>& bX, std::vector<float>& bY,
   std::vector<float>& bTargX, std::vector<float>& bTargY,
   std::vector<int>& bType,
@@ -525,7 +532,8 @@ void SendPacket(std::vector<int>& unewID, std::vector<int16_t>& uux, std::vector
 
 void cMap::sync() {
 
-  SendPacket(g_unewID, g_uux, g_uuy, g_upacked, g_umoving, g_explosion, g_eX, g_eY, g_bNewId, g_bX, g_bY, g_bTargX, g_bTargY, g_bType, g_bUpdateX, g_bUpdateY);
+//  SendPacket(g_unewID, g_uux, g_uuy, g_upacked, g_umoving, g_explosion, g_eX, g_eY, g_bNewId, g_bX, g_bY, g_bTargX, g_bTargY, g_bType, g_bUpdateX, g_bUpdateY);
+  SendPacket(g_unewID, g_uux, g_uuy, g_upacked, g_umoving, g_eXList, g_eYList, g_enewIdList, g_etypeList, g_bNewId, g_bX, g_bY, g_bTargX, g_bTargY, g_bType, g_bUpdateX, g_bUpdateY);
 
 }
 

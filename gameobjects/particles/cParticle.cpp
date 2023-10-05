@@ -589,10 +589,14 @@ int cParticle::create(long x, long y, int iType, int iHouse, int iFrame) {
     return create(x, y, iType, iHouse, iFrame, -1);
 }
 
-bool g_explosion = false;
-long g_eX = 0;
-long g_eY = 0;
-int g_newId = 0;
+//bool g_explosion = false;
+//long g_eX = 0;
+//long g_eY = 0;
+//int g_newId = 0;
+std::vector<long> g_eXList;
+std::vector<long> g_eYList;
+std::vector<int> g_enewIdList;
+std::vector<int> g_etypeList;
 
 int cParticle::create(long x, long y, int iType, int iHouse, int iFrame, int iUnitID) {
     int iNewId = findNewSlot();
@@ -601,13 +605,21 @@ int cParticle::create(long x, long y, int iType, int iHouse, int iFrame, int iUn
         return -1;
     }
 
-    if (iType == D2TM_PARTICLE_OBJECT_BOOM03)
-    {
-      g_explosion = true;
-      g_eX = x;
-      g_eY = y;
-      g_newId = iNewId;
-    }
+    //D2TM_PARTICLE_EXPLOSION_BULLET = 34 quad bullet splatter
+    //D2TM_PARTICLE_OBJECT_BOOM03 = 33 rocket explosion
+    //if (iType == D2TM_PARTICLE_EXPLOSION_BULLET)
+    //{
+    //  g_explosion = true;
+    //  g_eX = x;
+    //  g_eY = y;
+    //  g_newId = iNewId;
+    //}
+
+      g_eXList.push_back(x);
+      g_eYList.push_back(y);
+      g_enewIdList.push_back(iNewId);
+      g_etypeList.push_back(iType);
+
 
     cParticle &pParticle = particle[iNewId];
     if (iType > -1 && iType < MAX_PARTICLE_TYPES) {
@@ -832,15 +844,68 @@ void cParticle::die() {
         if (pParticle.isValid()) {
             pParticle.die();
 
-            if (g_explosion && !particle[g_newId].isValid())
-            {
-              g_explosion = false;
-              g_eX = 0;
-              g_eY = 0;
-              g_newId = 0;
-            }
+
+            //if (g_explosion && !particle[g_newId].isValid())
+            //{
+            //  g_explosion = false;
+            //  g_eX = 0;
+            //  g_eY = 0;
+            //  g_newId = 0;
+            //}
+
+
+
+   
+            
 
         }
     }
     boundParticleID = -1;
+
+    //cPlayer& humanPlayer = players[HUMAN];
+    //humanPlayer.addNotification("before remove", eNotificationType::NEUTRAL);
+
+    std::vector<int> toRemove;
+    int size = (int)g_enewIdList.size();
+    for (int i = size - 1; i >= 0; --i)
+    {
+      int id = g_enewIdList[i];
+      if (id >= 600)
+      {
+        toRemove.push_back(i);
+      }
+      else if (id<600 && !particle[id].isValid())
+      {
+        toRemove.push_back(i);
+      }
+    }
+
+
+    //std::stringstream buf;
+    //buf << "Removing " << toRemove.size() << " items";
+    //humanPlayer.addNotification(buf.str().c_str(), eNotificationType::NEUTRAL);
+
+    for (unsigned int i = 0; i < toRemove.size(); ++i)
+    {
+      unsigned int indexToRemove = toRemove[i];
+      if (indexToRemove < g_eXList.size())
+      {
+        g_eXList.erase(g_eXList.begin() + indexToRemove);
+      }
+      if (indexToRemove < g_eYList.size())
+      {
+        g_eYList.erase(g_eYList.begin() + indexToRemove);
+      }
+      if (indexToRemove < g_enewIdList.size())
+      {
+        g_enewIdList.erase(g_enewIdList.begin() + indexToRemove);
+      }
+      if (indexToRemove < g_etypeList.size())
+      {
+        g_etypeList.erase(g_etypeList.begin() + indexToRemove);
+      }
+    }
+    //buf.str("");
+    //buf << "after remove";
+    //humanPlayer.addNotification(buf.str().c_str(), eNotificationType::NEUTRAL);
 }

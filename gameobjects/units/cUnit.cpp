@@ -857,10 +857,14 @@ int main2();
 //  std::vector<int>& bType, 
 //  std::map<int/*newId*/, float/*posX*/>& bUpdateX, std::map<int/*newId*/, float/*posY*/>& bUpdateY);
 
-extern bool g_explosion;
-extern long g_eX;
-extern long g_eY;
-extern int g_newId;
+//extern bool g_explosion;
+//extern long g_eX;
+//extern long g_eY;
+//extern int g_newId;
+extern std::vector<long> g_eXList;
+extern std::vector<long> g_eYList;
+extern std::vector<int> g_enewIdList;
+extern std::vector<int> g_etypeList;
 
 extern std::vector<int> g_bNewId;
 extern std::vector<float> g_bX;

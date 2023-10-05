@@ -94,16 +94,20 @@ int main2() {
   return 0;
 }
 
-extern bool g_explosion;
+//extern bool g_explosion;
 #include <map>
 
 #include <chrono>
 std::chrono::time_point<std::chrono::high_resolution_clock> g_timerStart;
 bool g_timerEnabled = false;
 
+
 void SendPacket(std::vector<int>& unewID, std::vector<int16_t>& uux, std::vector<int16_t>& uuy, 
   std::vector<unsigned char>& upacked, std::vector<unsigned char>& umoving,
-  unsigned char isExplosion, int16_t ex16, int16_t ey16, 
+
+//  unsigned char isExplosion, int16_t ex16, int16_t ey16,
+std::vector<long>& eXList, std::vector<long>& eYList, std::vector<int>& enewIdList, std::vector<int>& etypeList,
+
   std::vector<int>& bNewId, std::vector<float>& bX, std::vector<float>& bY,
   std::vector<float>& bTargX, std::vector<float>& bTargY, 
   std::vector<int>& bType,
@@ -206,29 +210,62 @@ void SendPacket(std::vector<int>& unewID, std::vector<int16_t>& uux, std::vector
  // //  std::cout << "Data sent successfully." << std::endl;
  //   //   socketFile << "Data sent successfully." << std::endl;
  // }
-  if (isExplosion)
-  {
-    if (send(clientSocket, reinterpret_cast<const char*>(&isExplosion), sizeof(isExplosion), 0) == SOCKET_ERROR) {
-      std::cerr << "Sending data failed." << std::endl;
-      //    socketFile << "Sending data failed." << std::endl;
-    }
-    g_explosion = false;
-  }
-  else
-  {
-    if (send(clientSocket, reinterpret_cast<const char*>(&isExplosion), sizeof(isExplosion), 0) == SOCKET_ERROR) {
-      std::cerr << "Sending data failed." << std::endl;
-      //    socketFile << "Sending data failed." << std::endl;
-    }
-  }
-  if (send(clientSocket, reinterpret_cast<const char*>(&ex16), sizeof(ex16), 0) == SOCKET_ERROR) {
+
+
+//  if (isExplosion)
+//  {
+//    if (send(clientSocket, reinterpret_cast<const char*>(&isExplosion), sizeof(isExplosion), 0) == SOCKET_ERROR) {
+//      std::cerr << "Sending data failed." << std::endl;
+//      //    socketFile << "Sending data failed." << std::endl;
+//    }
+////    g_explosion = false;
+//  }
+//  else
+//  {
+//    if (send(clientSocket, reinterpret_cast<const char*>(&isExplosion), sizeof(isExplosion), 0) == SOCKET_ERROR) {
+//      std::cerr << "Sending data failed." << std::endl;
+//      //    socketFile << "Sending data failed." << std::endl;
+//    }
+//  }
+//  if (send(clientSocket, reinterpret_cast<const char*>(&ex16), sizeof(ex16), 0) == SOCKET_ERROR) {
+//    std::cerr << "Sending data failed." << std::endl;
+//    //    socketFile << "Sending data failed." << std::endl;
+//  }
+//  if (send(clientSocket, reinterpret_cast<const char*>(&ey16), sizeof(ey16), 0) == SOCKET_ERROR) {
+//    std::cerr << "Sending data failed." << std::endl;
+//    //    socketFile << "Sending data failed." << std::endl;
+//  }
+
+  //std::vector<long>& eXList, std::vector<long>& eYList, std::vector<int>& enewIdList, std::vector<int>& etypeList,
+  int eSize = eXList.size();
+  if (send(clientSocket, reinterpret_cast<const char*>(&eSize), sizeof(eSize), 0) == SOCKET_ERROR) {
     std::cerr << "Sending data failed." << std::endl;
     //    socketFile << "Sending data failed." << std::endl;
   }
-  if (send(clientSocket, reinterpret_cast<const char*>(&ey16), sizeof(ey16), 0) == SOCKET_ERROR) {
-    std::cerr << "Sending data failed." << std::endl;
-    //    socketFile << "Sending data failed." << std::endl;
+  for (int i = 0; i < eSize; ++i)
+  {
+    int v = (int)eXList[i];
+    if (send(clientSocket, reinterpret_cast<const char*>(&v), sizeof(v), 0) == SOCKET_ERROR) {
+      std::cerr << "Sending data failed." << std::endl;
+      //    socketFile << "Sending data failed." << std::endl;
+    }
+    v = (int)eYList[i];
+    if (send(clientSocket, reinterpret_cast<const char*>(&v), sizeof(v), 0) == SOCKET_ERROR) {
+      std::cerr << "Sending data failed." << std::endl;
+      //    socketFile << "Sending data failed." << std::endl;
+    }
+    int iv = enewIdList[i];
+    if (send(clientSocket, reinterpret_cast<const char*>(&iv), sizeof(iv), 0) == SOCKET_ERROR) {
+      std::cerr << "Sending data failed." << std::endl;
+      //    socketFile << "Sending data failed." << std::endl;
+    }
+    iv = etypeList[i];
+    if (send(clientSocket, reinterpret_cast<const char*>(&iv), sizeof(iv), 0) == SOCKET_ERROR) {
+      std::cerr << "Sending data failed." << std::endl;
+      //    socketFile << "Sending data failed." << std::endl;
+    }
   }
+
   //max size is 300
   int bulletSize = bNewId.size();
   if (send(clientSocket, reinterpret_cast<const char*>(&bulletSize), sizeof(bulletSize), 0) == SOCKET_ERROR) {
