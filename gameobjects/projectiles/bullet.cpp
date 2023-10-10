@@ -658,19 +658,44 @@ int cBullet::getRandomX() const {
     return pos_x() + half + randomX;
 }
 
+extern std::vector<int> g_bNewId;
+extern std::vector<float> g_bX;
+extern std::vector<float> g_bY;
+extern std::vector<float> g_bTargX;
+extern std::vector<float> g_bTargY;
+extern std::vector<int> g_bType;
+
 void cBullet::die() {
     bAlive = false;
 
     g_bUpdateX[this->newID] = 0;
     g_bUpdateY[this->newID] = 0;
+    g_bNewId[this->newID] = 0;
+    g_bX[this->newID] = 0;
+    g_bY[this->newID] = 0;
+    g_bTargX[this->newID] = 0;
+    g_bTargY[this->newID] = 0;
+    g_bType[this->newID] = 0;
 
-    auto it = g_bUpdateX.find(this->newID);
-    if (it != g_bUpdateX.end()) {
-      g_bUpdateX.erase(it);
+    {
+      auto it = g_bUpdateX.find(this->newID);
+      if (it != g_bUpdateX.end()) {
+        g_bUpdateX.erase(it);
+      }
     }
-    auto it2 = g_bUpdateY.find(this->newID);
-    if (it2 != g_bUpdateY.end()) {
-      g_bUpdateY.erase(it2);
+    {
+      auto it2 = g_bUpdateY.find(this->newID);
+      if (it2 != g_bUpdateY.end()) {
+        g_bUpdateY.erase(it2);
+      }
+    }
+    {
+      g_bNewId.erase(g_bNewId.begin() + this->newID);
+      g_bX.erase(g_bX.begin() + this->newID);
+      g_bY.erase(g_bY.begin() + this->newID);
+      g_bTargX.erase(g_bTargX.begin() + this->newID);
+      g_bTargY.erase(g_bTargY.begin() + this->newID);
+      g_bType.erase(g_bType.begin() + this->newID);
     }
 }
 

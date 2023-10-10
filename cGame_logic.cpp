@@ -511,11 +511,13 @@ void cGame::updateMouseAndKeyboardStateAndGamePlaying() {
     }
 }
 
+extern int g_seq;
+
 void cGame::drawStateCombat() {
     drawManager->drawCombatState();
     if (m_drawFps) {
-        alfont_textprintf(bmp_screen, game_font, 0, 44, makecol(255, 255, 255), "FPS/REST: %d / %d", game.getFps(),
-                          iRest);
+        alfont_textprintf(bmp_screen, game_font, 0, 44, makecol(255, 255, 255), "FPS/REST: %d / %d, seq:%d", game.getFps(),
+                          iRest, g_seq);
     }
 
     // for now, call this on game class.

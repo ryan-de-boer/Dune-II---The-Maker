@@ -3,7 +3,164 @@
 #include <windows.h>
 #include <winsock2.h>
 #include <vector>
+#include <map>
+#include <queue>
+#include <mutex>
 SOCKET clientSocket;
+
+extern std::vector<long> g_eXList;
+extern std::vector<long> g_eYList;
+extern std::vector<int> g_enewIdList;
+extern std::vector<int> g_etypeList;
+
+extern std::vector<int> g_bNewId;
+extern std::vector<float> g_bX;
+extern std::vector<float> g_bY;
+extern std::vector<float> g_bTargX;
+extern std::vector<float> g_bTargY;
+extern std::vector<int> g_bType;
+
+extern std::map<int/*newId*/, float/*posX*/> g_bUpdateX;
+extern std::map<int/*newId*/, float/*posY*/> g_bUpdateY;
+
+extern std::vector<int> g_unewID;
+extern std::vector<int16_t> g_uux;
+extern std::vector<int16_t> g_uuy;
+extern std::vector<unsigned char> g_upacked;
+extern std::vector<unsigned char> g_umoving;
+
+void SendPacket(std::vector<int>& unewID, std::vector<int16_t>& uux, std::vector<int16_t>& uuy,
+  std::vector<unsigned char>& upacked, std::vector<unsigned char>& umoving,
+
+  //  unsigned char isExplosion, int16_t ex16, int16_t ey16,
+  std::vector<long>& eXList, std::vector<long>& eYList, std::vector<int>& enewIdList, std::vector<int>& etypeList,
+
+  std::vector<int>& bNewId, std::vector<float>& bX, std::vector<float>& bY,
+  std::vector<float>& bTargX, std::vector<float>& bTargY,
+  std::vector<int>& bType,
+  std::map<int/*newId*/, float/*posX*/>& bUpdateX, std::map<int/*newId*/, float/*posY*/>& bUpdateY);
+
+struct Packet
+{
+public:
+  std::vector<int> unewID;
+  std::vector<int16_t> uux;
+  std::vector<int16_t> uuy;
+  std::vector<unsigned char> upacked; 
+  std::vector<unsigned char> umoving;
+
+  std::vector<long> eXList; 
+  std::vector<long> eYList; 
+  std::vector<int> enewIdList; 
+  std::vector<int> etypeList;
+
+  std::vector<int> bNewId; std::vector<float> bX; std::vector<float> bY;
+  std::vector<float> bTargX; std::vector<float> bTargY; 
+  std::vector<int> bType;
+  std::map<int/*newId*/, float/*posX*/> bUpdateX; 
+  std::map<int/*newId*/, float/*posY*/> bUpdateY;
+};
+std::queue<Packet> myQueue;
+//std::mutex mtx;
+
+HANDLE hMutex;
+
+void CreateM()
+{
+  hMutex = CreateMutex(NULL, FALSE, NULL);
+}
+void ReleaseM()
+{
+  ReleaseMutex(hMutex);
+}
+bool WaitForSingle()
+{
+  return WaitForSingleObject(hMutex, INFINITE) == WAIT_OBJECT_0;
+}
+
+void ReceiveAck()
+{
+  // Receive an integer from the client
+  int receivedInt;
+  int bytesReceived = recv(clientSocket, reinterpret_cast<char*>(&receivedInt), sizeof(receivedInt), 0);
+
+  if (bytesReceived == sizeof(receivedInt)) {
+    // Successfully received the integer
+    receivedInt = ntohl(receivedInt); // Convert from network byte order (if needed)
+//    std::cout << "Received Integer: " << receivedInt << std::endl;
+  }
+  else if (bytesReceived == 0) {
+    // Connection closed by the client
+    std::cout << "Client disconnected." << std::endl;
+  }
+  else {
+    // Error occurred during receive
+    std::cerr << "recv failed." << std::endl;
+  }
+  if (receivedInt == 255)
+  {
+    //ok
+  }
+  else
+  {
+    //bad
+  }
+}
+
+// Function that will be executed by the new thread
+DWORD WINAPI MyThreadFunction(LPVOID lpParam) {
+  int threadNumber = *((int*)lpParam);
+    std::cout << "Thread " << threadNumber << " is running." << std::endl;
+
+    while (true)
+    {
+      // Lock the mutex before accessing the queue
+      //std::lock_guard<std::mutex> lock(mtx);
+//      DWORD result = WaitForSingleObject(hMutex, INFINITE);
+      WaitForSingleObject(hMutex, INFINITE);
+
+//      if (result == WAIT_OBJECT_0) {
+        // Mutex acquired, perform critical section operations
+ //       std::cout << "A Thread has acquired the mutex." << std::endl;
+
+///      Packet p;
+//      bool hasPacket = false;
+      std::queue<Packet> localQueue;
+      while (!myQueue.empty()) {
+        //         std::cout << "B Thread queue NOT empty." << std::endl;
+                 // Consume data
+        Packet p = myQueue.front();
+        myQueue.pop();
+        localQueue.push(p);
+ //       hasPacket = true;
+        //std::cout << "Consumed: " << data << std::endl;
+      }
+      ReleaseMutex(hMutex);
+
+      std::cout << "Local queue size: " << localQueue.size() << std::endl;
+      while (!localQueue.empty())
+      {
+        Packet p = localQueue.front();
+        localQueue.pop();
+        //        std::cout << "Thread sending." << std::endl;
+        SendPacket(p.unewID, p.uux, p.uuy, p.upacked, p.umoving, p.eXList, p.eYList, p.enewIdList, p.etypeList, p.bNewId, p.bX, p.bY, p.bTargX, p.bTargY, p.bType, p.bUpdateX, p.bUpdateY);
+        ReceiveAck();
+      }
+       
+
+
+//      }
+
+//      SendPacket(g_unewID, g_uux, g_uuy, g_upacked, g_umoving, g_eXList, g_eYList, g_enewIdList, g_etypeList, g_bNewId, g_bX, g_bY, g_bTargX, g_bTargY, g_bType, g_bUpdateX, g_bUpdateY);
+
+ 
+
+      Sleep(5);
+    }
+
+
+  return 0; // Return a DWORD (typically 0) to indicate success
+}
 
 int InitSocket()
 {
@@ -42,6 +199,34 @@ int InitSocket()
     socketFile.close();
     return 1;
   }
+
+//  int sendBufferSize = 1024*10; // Size in bytes
+//  int sendBufferSize = 1073741824; //gig too big
+//  int sendBufferSize = 1048576; //mb too big  
+//  int sendBufferSize = 1024; //1k too big
+//  int sendBufferSize = 500; //500 too big
+  int sendBufferSize = 10; //500 too big
+  int result = setsockopt(clientSocket, SOL_SOCKET, SO_SNDBUF, (char*)&sendBufferSize, sizeof(int));
+  if (result == SOCKET_ERROR) {
+    // Handle the error
+  }
+  
+
+  HANDLE thread;
+
+
+    int threadNumber = 1;
+    thread = CreateThread(NULL, 0, MyThreadFunction, &threadNumber, 0, NULL);
+    if (thread == NULL) {
+ //     std::cerr << "Thread creation failed." << std::endl;
+ //     return 1; // Return an error code
+    }
+  
+
+
+
+
+
 
   socketFile.close();
   return 0;
@@ -101,6 +286,7 @@ int main2() {
 std::chrono::time_point<std::chrono::high_resolution_clock> g_timerStart;
 bool g_timerEnabled = false;
 
+int g_seq = 0;
 
 void SendPacket(std::vector<int>& unewID, std::vector<int16_t>& uux, std::vector<int16_t>& uuy, 
   std::vector<unsigned char>& upacked, std::vector<unsigned char>& umoving,
@@ -113,6 +299,8 @@ std::vector<long>& eXList, std::vector<long>& eYList, std::vector<int>& enewIdLi
   std::vector<int>& bType,
   std::map<int/*newId*/, float/*posX*/>& bUpdateX, std::map<int/*newId*/, float/*posY*/>& bUpdateY)
 {
+
+
   unsigned char byteToSend = 0xFE;
   if (send(clientSocket, reinterpret_cast<const char*>(&byteToSend), 1, 0) == SOCKET_ERROR) {
     std::cerr << "Sending data failed." << std::endl;
@@ -140,6 +328,18 @@ std::vector<long>& eXList, std::vector<long>& eYList, std::vector<int>& enewIdLi
   else {
   //  std::cout << "Data sent successfully." << std::endl;
     //   socketFile << "Data sent successfully." << std::endl;
+  }
+
+  //int sendBufferSize = 1024; // Size in bytes
+  //int result = setsockopt(clientSocket, SOL_SOCKET, SO_SNDBUF, (char*)&sendBufferSize, sizeof(int));
+  //if (result == SOCKET_ERROR) {
+  //  // Handle the error
+  //}
+
+  g_seq++;
+  if (send(clientSocket, reinterpret_cast<const char*>(&g_seq), sizeof(g_seq), 0) == SOCKET_ERROR) {
+    std::cerr << "Sending data failed." << std::endl;
+    //    socketFile << "Sending data failed." << std::endl;
   }
 
   int unewIdSize = unewID.size();

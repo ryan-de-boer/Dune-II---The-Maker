@@ -27,6 +27,13 @@
 
 #include <algorithm>
 #include <cmath>
+#include <queue>
+#include <mutex>
+#include <iostream>
+
+void CreateM();
+void ReleaseM();
+bool WaitForSingle();
 
 cMap::cMap() {
     TIMER_scroll = 0;
@@ -36,6 +43,7 @@ cMap::cMap() {
     m_iDesiredAmountOfWorms = 0;
     m_iTIMER_respawnSandworms = -1;
     init(64, 64);
+    CreateM();
 }
 
 cMap::~cMap() {
@@ -518,6 +526,29 @@ extern std::vector<int> g_bType;
 extern std::map<int/*newId*/, float/*posX*/> g_bUpdateX;
 extern std::map<int/*newId*/, float/*posY*/> g_bUpdateY;
 
+struct Packet
+{
+public:
+  std::vector<int> unewID;
+  std::vector<int16_t> uux;
+  std::vector<int16_t> uuy;
+  std::vector<unsigned char> upacked;
+  std::vector<unsigned char> umoving;
+
+  std::vector<long> eXList;
+  std::vector<long> eYList;
+  std::vector<int> enewIdList;
+  std::vector<int> etypeList;
+
+  std::vector<int> bNewId; std::vector<float> bX; std::vector<float> bY;
+  std::vector<float> bTargX; std::vector<float> bTargY;
+  std::vector<int> bType;
+  std::map<int/*newId*/, float/*posX*/> bUpdateX;
+  std::map<int/*newId*/, float/*posY*/> bUpdateY;
+};
+extern std::queue<Packet> myQueue;
+//extern std::mutex mtx;
+
 
 void SendPacket(std::vector<int>& unewID, std::vector<int16_t>& uux, std::vector<int16_t>& uuy,
   std::vector<unsigned char>& upacked, std::vector<unsigned char>& umoving,
@@ -530,10 +561,50 @@ void SendPacket(std::vector<int>& unewID, std::vector<int16_t>& uux, std::vector
   std::vector<int>& bType,
   std::map<int/*newId*/, float/*posX*/>& bUpdateX, std::map<int/*newId*/, float/*posY*/>& bUpdateY);
 
+//int g_syncTimes = 0;
 void cMap::sync() {
 
+  Packet p;
+
+  p.unewID = g_unewID;
+  p.uux = g_uux;
+  p.uuy = g_uuy;
+  p.upacked = g_upacked;
+  p.umoving = g_umoving;
+
+  p.eXList = g_eXList;
+  p.eYList = g_eYList;
+  p.enewIdList = g_enewIdList;
+  p.etypeList = g_etypeList;
+
+  p.bNewId = g_bNewId;
+  p.bX = g_bX;
+  p.bY = g_bY;
+  p.bTargX = g_bTargX;
+  p.bTargY = g_bTargY;
+  p.bType = g_bType;
+  p.bUpdateX = g_bUpdateX;
+  p.bUpdateY = g_bUpdateY;
+  
+  // Lock the mutex before pushing to the queue
+//  std::lock_guard<std::mutex> lock(mtx);
+
+ // std::cout << "MAP waiting." << std::endl;
+
+  if (WaitForSingle())
+  {
+ //   std::cout << "MAP pushing." << std::endl;
+    if (myQueue.size()<10)
+    myQueue.push(p);
+  //  std::cout << "MAP releasing." << std::endl;
+    ReleaseM();
+  }
+
 //  SendPacket(g_unewID, g_uux, g_uuy, g_upacked, g_umoving, g_explosion, g_eX, g_eY, g_bNewId, g_bX, g_bY, g_bTargX, g_bTargY, g_bType, g_bUpdateX, g_bUpdateY);
-  SendPacket(g_unewID, g_uux, g_uuy, g_upacked, g_umoving, g_eXList, g_eYList, g_enewIdList, g_etypeList, g_bNewId, g_bX, g_bY, g_bTargX, g_bTargY, g_bType, g_bUpdateX, g_bUpdateY);
+
+ // g_syncTimes++;
+//  if (g_syncTimes%2==0)
+//  SendPacket(g_unewID, g_uux, g_uuy, g_upacked, g_umoving, g_eXList, g_eYList, g_enewIdList, g_etypeList, g_bNewId, g_bX, g_bY, g_bTargX, g_bTargY, g_bType, g_bUpdateX, g_bUpdateY);
 
 }
 
