@@ -668,7 +668,7 @@ void cMap::draw_units() {
             pUnit.draw();
         }
 
-        if (i == 6)
+        if (i == 6 || i==8)
         {
           pUnit.sync();
         }
