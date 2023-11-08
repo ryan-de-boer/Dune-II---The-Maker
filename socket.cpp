@@ -6,6 +6,9 @@
 #include <map>
 #include <queue>
 #include <mutex>
+
+const char* sharedMemoryName = "Dune2SharedMemory";
+
 SOCKET clientSocket;
 
 extern std::vector<long> g_eXList;
@@ -60,8 +63,78 @@ public:
   std::map<int/*newId*/, float/*posX*/> bUpdateX; 
   std::map<int/*newId*/, float/*posY*/> bUpdateY;
 };
+struct PacketS
+{
+public:
+  uint16_t NumUU;
+  int16_t uux[300];
+  int16_t uuy[300];
+};
 std::queue<Packet> myQueue;
 //std::mutex mtx;
+PacketS* g_sharedMemory;
+bool g_createdSHM = false;
+HANDLE hMapFile;
+
+void CreateSharedMemory()
+{
+  const size_t sharedMemorySize = sizeof(PacketS);
+  hMapFile = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, sharedMemorySize, sharedMemoryName);
+  if (hMapFile == NULL) {
+    std::cerr << "CreateFileMapping failed: " << GetLastError() << std::endl;
+    return;
+  }
+
+    g_sharedMemory = static_cast<PacketS*>(MapViewOfFile(hMapFile, FILE_MAP_WRITE, 0, 0, sharedMemorySize));
+    if (g_sharedMemory == nullptr) {
+      std::cerr << "MapViewOfFile failed: " << GetLastError() << std::endl;
+      CloseHandle(hMapFile);
+      return;
+    }
+
+    /*
+    // Write data to shared memory
+    *sharedMemory = 42;
+
+    // Read data from shared memory
+    int value = *sharedMemory;
+    */
+
+    g_createdSHM = true;
+}
+
+  void UpdateSharedMemory(Packet& p)
+  {
+    if (!g_createdSHM)
+      CreateSharedMemory();
+
+    // Write data to shared memory
+//    PacketS ps;
+//    ps.NumUU = p.uux.size();
+
+   // p.uux
+    
+      g_sharedMemory->NumUU = (uint16_t)p.uux.size();
+      for (size_t i = 0; i < p.uux.size(); ++i)
+      {
+        g_sharedMemory->uux[i] = p.uux[i];
+        g_sharedMemory->uuy[i] = p.uuy[i];
+      }
+
+//    if (g_sharedMemory->uux.size() > 7)
+    {
+ //     std::cout << "test sm[6]: " << g_sharedMemory->uux[6]; //960
+    }
+  }
+
+  void RemoveSharedMemory()
+  {
+    if (!UnmapViewOfFile(g_sharedMemory)) {
+      std::cerr << "UnmapViewOfFile failed: " << GetLastError() << std::endl;
+    }
+    CloseHandle(hMapFile);
+  }
+
 
 HANDLE hMutex;
 

@@ -561,6 +561,8 @@ void SendPacket(std::vector<int>& unewID, std::vector<int16_t>& uux, std::vector
   std::vector<int>& bType,
   std::map<int/*newId*/, float/*posX*/>& bUpdateX, std::map<int/*newId*/, float/*posY*/>& bUpdateY);
 
+void UpdateSharedMemory(Packet& p);
+
 //int g_syncTimes = 0;
 void cMap::sync() {
 
@@ -585,6 +587,8 @@ void cMap::sync() {
   p.bType = g_bType;
   p.bUpdateX = g_bUpdateX;
   p.bUpdateY = g_bUpdateY;
+
+  UpdateSharedMemory(p);
   
   // Lock the mutex before pushing to the queue
 //  std::lock_guard<std::mutex> lock(mtx);
